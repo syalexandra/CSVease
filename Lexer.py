@@ -1,3 +1,5 @@
+import sys 
+
 class LexerDFA:
     def __init__(self,input_string):
         self.tokens = []
@@ -109,8 +111,13 @@ class LexerDFA:
 
         
 
+
 if __name__ == '__main__':
-    lexer = LexerDFA('SHOW abc 123 () var_123')
+    if len(sys.argv) > 1:
+        input_string = sys.argv[1]  
+    else:
+        input_string = ''
+    
+    lexer = LexerDFA(input_string)
     lexer.run()
     print(lexer.tokens)
-
