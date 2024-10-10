@@ -4,7 +4,7 @@ token_types = (
     'INTEGER',
     'STRING',
     'KEYWORD',
-    'WHITESPACE',
+    'WHITESPACE',# should we ignore whitespace?
     'LPAR',
     'RPAR',
     'COMMA'
@@ -22,7 +22,7 @@ reserved_keywords = (
     'GET',
     'AVG'
 )
-"abc"
+
 
 
 class Token:
