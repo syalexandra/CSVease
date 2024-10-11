@@ -16,6 +16,8 @@ class Line:
         self.current_position = 0
         self.current_char = self.current_line[self.current_position] if self.current_line else None
         self.prev_class = None
+        self.mod_stack = []
+        self.raw_word = ""
         
         self.OP_TOKENS = {
           '=': 'EQ',
@@ -47,7 +49,6 @@ class Line:
             self.current_char = self.current_line[self.current_position]
 
     def resolve_integer(self):
-        print(f"Call to resolve integer: {self.current_char}")
         num_str = ''
         while  self.current_char is not None:
             # We reached the end of the sequence and we want to return the integer
@@ -57,8 +58,22 @@ class Line:
                 raise InvalidSequence(self.current_line)
             num_str += self.current_char
             self.advance()
-        return ('INTEGER', num_str)     
+        return ('INTEGER', num_str)
     
+    def keyword_or_identifier(self):
+        if self.raw_word.upper() in self.KEYWORDS:
+            self.line_tokens.append(('KEYWORD',self.raw_word.upper()))
+            self.raw_word = ""
+        else:
+            self.line_tokens.append(('IDENTIFIER', self.raw_word))
+            self.raw_word = ""
+    
+    def final_check(self):
+        if len(self.mod_stack) > 0:
+            raise InvalidString
+        if len(self.mod_stack) == 0 and len(self.raw_word) > 0:
+            self.keyword_or_identifier()
+            
     def check_prev(self):
         truth = None
         if (self.prev_class == None or self.prev_class == "WHITESPACE" or self.prev_class == "OPERATOR"):
@@ -69,27 +84,6 @@ class Line:
     
     def valid_operator(self):
       return (self.current_position == len(self.current_line) - 1 or self.check_prev() or self.current_char == ")")
-                
-    def find_next_index(self):
-        next_index =  self.current_line.find(' ', self.current_position)
-        
-        for operator in self.OP_TOKENS.keys():
-            test_index = self.current_line.find(operator, self.current_position)
-            if test_index == -1: 
-                continue
-            else:
-                if next_index != -1:
-                    next_index = min(test_index, next_index)
-        
-        for modifider in self.MODIFIERS.keys():
-            test_index = self.current_line.find(modifider, self.current_position)
-            if test_index == -1: 
-                continue
-            else:
-                if next_index != -1:
-                    next_index = min(test_index, next_index)
-                    
-        return next_index
           
     def process_line(self):
         # Allows for line comments
@@ -97,40 +91,22 @@ class Line:
             return []
         
         while self.current_char is not None:
-            next_space = self.find_next_index()
-            if next_space == -1:  # No more spaces found
-                unit = self.current_line[self.current_position:]  # Take the rest of the line
-            else:
-                unit = self.current_line[self.current_position: next_space]  
-                            
             if self.current_char.isspace():
+                if len(self.raw_word) != 0:
+                    self.keyword_or_identifier()
+                    
                 self.prev_class = 'WHITESPACE'
                 self.line_tokens.append(('WHITESPACE',self.current_char))
                 self.advance()
                 continue
             
-            # checking for keyword -- Highest priority
-            elif unit.upper() in self.KEYWORDS and self.check_prev():
-                self.line_tokens.append(('KEYWORD',unit.upper()))
-                self.current_position = self.current_line.find(' ', self.current_position)
-                if self.current_position >= len(self.current_line) or self.current_position == -1:
-                    self.current_char = None
-                else:
-                    self.prev_class = 'KEYWORD'
-                    self.current_char = self.current_line[self.current_position]
-                continue 
-              
             # checking for identifier -- Second priority
-            elif self.current_char.isalpha() and (self.check_prev() or self.prev_class == "MODIFIER"):
-              self.line_tokens.append(('IDENTIFIER', unit))
-              self.current_position = next_space
-              if self.current_position >= len(self.current_line) or self.current_position == -1:
-                  self.current_char = None
-              else:
-                  self.prev_class = 'IDENTIFIER'
-                  self.current_char = self.current_line[self.current_position]
-              continue
-            
+            elif self.current_char.isalpha() or self.current_char == "_":
+                    self.raw_word+=self.current_char
+                    self.advance()
+                    self.prev_class = "LITERAL"
+                    continue
+    
             # checking for operator
             elif self.current_char in self.OP_TOKENS and self.valid_operator():
                 self.line_tokens.append((self.OP_TOKENS[self.current_char], self.current_char))
@@ -140,7 +116,10 @@ class Line:
             
             # checking for modifier 
             elif self.current_char in self.MODIFIERS:
-                
+                if len(self.raw_word) != 0 and (self.current_char == "_" or self.current_char == "."):
+                    self.raw_word += self.current_char
+                    self.advance()
+                    continue
                 self.line_tokens.append((self.MODIFIERS[self.current_char], self.current_char))
                 self.prev_class = 'MODIFIER'
                 self.advance()
@@ -148,24 +127,31 @@ class Line:
             
             # checking for integer value 
             elif self.current_char.isdigit():
-                self.line_tokens.append(self.resolve_integer())
-                self.prev_class = 'INTEGER'
+                if self.prev_class == "WHITESPACE" or self.prev_class == "MODIFIER":
+                    self.line_tokens.append(self.resolve_integer())
+                    self.prev_class = 'INTEGER'
+                else:
+                    self.prev_class = "LITERAL"
+                    self.raw_word += self.current_char
+                    
                 self.advance()
                 continue
             
             # parsing for strings
-            elif self.current_char == '"':
-                next_quot = self.current_line.find('"', self.current_position + 1)  # Start searching from next position
-                if next_quot == -1:  # No closing quote found
-                    raise InvalidString("Unterminated string literal.")
-                string_value = self.current_line[self.current_position + 1: next_quot]  # Exclude the quotes
-                self.line_tokens.append(('STRING', string_value))
-                self.current_position = next_quot + 1  # Move past the closing quote
+            elif self.current_char == '"' or self.current_char == "'":
+                if len(self.mod_stack) == 0:
+                    self.prev_class = "LITERAL"
+                    self.mod_stack.append(self.current_char)
+                else:
+                    self.mod_stack.pop()
+                    self.line_tokens.append(('STRING', self.raw_word))
+                    self.prev_class = "STRING"
+                    self.raw_word = ""              
                 self.advance()  # Update the current character
-                continue
             else: 
                 raise UnexpectedCharacter(self.current_char)
-          
+    
+        self.final_check()
         return self.line_tokens
             
             
@@ -187,7 +173,6 @@ class CSVeaseLexer:
                     line_to_process = Line(line)
                     self.tokens.extend(line_to_process.process_line())
                 except UnexpectedCharacter as e:
-                    print(e)
                     self.errors.UnexpectedCharacter(line, self.current_line_no)
                 except BadIdentifier as e:
                     self.errors.BadIdentifier(line, self.current_line_no)
