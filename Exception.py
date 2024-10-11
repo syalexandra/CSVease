@@ -3,13 +3,16 @@ class BadIdentifier(Exception):
         super().__init__(message)
 
 class InvalidSequence(Exception):
-    def __init__(self, line):
-        super().__init__(f"Invalid sequence. {line}")
+    def __init__(self, error):
+        self.error=error
+        super().__init__(error)
 
 class UnexpectedCharacter(Exception):
-    def __init__(self, character):
-        super().__init__(f"Unexpected character: {character}")
+    def __init__(self, error):
+        self.error=error
+        super().__init__(error)
 
 class InvalidString(Exception):
-    def __init__(self, message="Invalid string format."):
-        super().__init__(message)
+    def __init__(self, error):
+        self.error=error
+        super().__init__(error)

@@ -1,0 +1,4 @@
+// Level: Hard --> Complex string parsing
+
+LOAD "C:/Data/file.csv" INTO dataset
+CONVERT dataset TO PDF OUTPUT "final_output.pdf"

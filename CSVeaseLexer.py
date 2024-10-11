@@ -1,6 +1,6 @@
 import sys
 
-from Exception import InvalidString, BadIdentifier, UnexpectedCharacter, InvalidSequence
+from Exception import InvalidString, UnexpectedCharacter, InvalidSequence
 from Error import LexerErrors
 
 # TODO: do the error handling @ Phillip
@@ -41,23 +41,34 @@ class Line:
       else:
           self.current_char = self.current_line[self.current_position]
 
-    def retreat(self):
-        self.current_position -= 1
-        if self.current_position <= 0:
-            self.current_char = None
-        else:
-            self.current_char = self.current_line[self.current_position]
-
+    def find_next_break(self):
+        index = self.current_line.find(' ', self.current_position)
+        for modifier in self.MODIFIERS.keys():
+            temp_index = self.current_line.find(modifier, self.current_position)
+            if index != -1 and temp_index != -1:
+                index = min(index, temp_index)
+            if index == -1 and temp_index != -1:
+                index = temp_index
+        
+        return index    
+                
+            
     def resolve_integer(self):
         num_str = ''
-        while  self.current_char is not None:
-            # We reached the end of the sequence and we want to return the integer
-            if self.current_char.isspace() or self.current_char == ')':
-                self.advance()
+        while not (self.current_char.isspace() or self.current_char == ')'):
+            
             if self.current_char.isalpha():
-                raise InvalidSequence(self.current_line)
+                next_break = self.find_next_break() 
+                if next_break == -1:
+                    # Pass the rest of the line
+                    raise InvalidSequence(num_str+self.current_line[self.current_position: len(self.current_line)])
+                else: 
+                    raise InvalidSequence(num_str+self.current_line[self.current_position: next_break])
+
             num_str += self.current_char
             self.advance()
+
+        
         return ('INTEGER', num_str)
     
     def keyword_or_identifier(self):
@@ -70,7 +81,8 @@ class Line:
     
     def final_check(self):
         if len(self.mod_stack) > 0:
-            raise InvalidString
+            mod = self.mod_stack.pop()
+            raise InvalidString(f"{mod}{self.raw_word}")
         if len(self.mod_stack) == 0 and len(self.raw_word) > 0:
             self.keyword_or_identifier()
             
@@ -148,7 +160,13 @@ class Line:
                     self.prev_class = "STRING"
                     self.raw_word = ""              
                 self.advance()  # Update the current character
-            else: 
+            
+            # doesn't matter what character, if it is in quotes it is fine
+            elif len(self.mod_stack) >0: 
+                self.raw_word += self.current_char
+                self.advance()
+            
+            else:
                 raise UnexpectedCharacter(self.current_char)
     
         self.final_check()
@@ -160,26 +178,25 @@ class CSVeaseLexer:
         self.tokens = []
         self.file = file
         self.current_line_no = 0
-        self.errors = LexerErrors()
+        self.errors = LexerErrors(self.file)
       
     def resolve_tokens(self):
     # Open the file and ensure it's closed properly
         with open(self.file, "r") as file:
             for line in file:
                 if len(line.strip()) == 0:
+                    self.current_line_no += 1
                     continue
                 try:
                     self.current_line_no += 1
                     line_to_process = Line(line)
                     self.tokens.extend(line_to_process.process_line())
                 except UnexpectedCharacter as e:
-                    self.errors.UnexpectedCharacter(line, self.current_line_no)
-                except BadIdentifier as e:
-                    self.errors.BadIdentifier(line, self.current_line_no)
+                    self.errors.UnexpectedCharacter(line, self.current_line_no, e.error)
                 except InvalidString as e:
-                    self.errors.InvalidString(line, self.current_line_no)
+                    self.errors.InvalidString(line, self.current_line_no, e.error)
                 except InvalidSequence as e:
-                    self.errors.InvalidSequence(line, self.current_line_no)
+                    self.errors.InvalidSequence(line, self.current_line_no, e.error)
     
     def print_tokens(self):
         count = {}
@@ -187,7 +204,6 @@ class CSVeaseLexer:
             token_class, value = token
             if token_class not in count:
                 count[token_class] = [token]
-                
             else: 
                 count[token_class].append(token)
 
@@ -200,7 +216,8 @@ class CSVeaseLexer:
                 print(f"    {count[key][0]}")
                 continue
             for value in count[key]:
-                print(f"    {value}")
+                token_class, token_val = value
+                print(f"    <{token_class}, '{token_val}'>")
         
 
 if __name__ == '__main__':

@@ -1,0 +1,4 @@
+// Level: Medium --> String and Integer Parsing
+
+LOAD "data/file.csv" INTO dataset_1
+GET 50 ROWS FROM sales_data
