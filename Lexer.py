@@ -1,5 +1,11 @@
-import sys 
+import sys
 
+from Exception import BadIdentifier, UnexpectedCharacter
+
+# TODO: do the error handling @ Phillip
+# identifier, but the id starts with a number -> throw an error
+# 
+# Use the stack to ensure that there are matching sets 
 class LexerDFA:
     def __init__(self,input_string):
         self.tokens = []
@@ -17,7 +23,14 @@ class LexerDFA:
         else:
             self.current_char = self.input_string[self.current_position]
 
-
+    def retreat(self):
+        self.current_position -= 1
+        self.end_position = self.current_position
+        if self.current_position <= 0:
+            self.current_char = None
+        else:
+            self.current_char = self.input_string[self.current_position]
+            
     def matchKeyWord(self,start,length,targetString):
         if self.input_string[start:start+length] == targetString:
             return start+length
@@ -48,19 +61,26 @@ class LexerDFA:
                 return self.end_position
             else:
                 self.current_char = self.input_string[self.end_position]
-        
-        if self.current_char.isspace():
+        if self.current_char.isspace() or self.current_char == ')':
             return self.end_position
         else:
-            raise Exception
+            raise BadIdentifier
         
         
-    def integer(self):
+    def resolve_integer(self):
         num_str = ''
         while self.current_char is not None and self.current_char.isdigit():
             num_str += self.current_char
             self.advance()
-        return ('INTEGER', num_str)
+        # test to see if the next character is a space
+        self.advance()
+        if self.current_char.isspace() or self.current_char == ')':
+            self.retreat()
+            return ('INTEGER', num_str)           
+        # In the case where the input is 123+ or 123abc 
+        else:
+            self.retreat()
+            raise BadIdentifier
 
     def run(self):
         while self.current_char is not None:
@@ -71,7 +91,11 @@ class LexerDFA:
             elif self.current_char == '.':
                 self.tokens.append(('DOT','.'))
                 self.advance()
-
+            
+            elif self.current_char == '=':
+                self.tokens.append(('EQ','='))
+                self.advance()
+            
             elif self.current_char == '+':
                 self.tokens.append(('PLUS','+'))
                 self.advance()
@@ -89,7 +113,7 @@ class LexerDFA:
                 self.advance()
 
             elif self.current_char.isdigit():
-                self.tokens.append(self.integer())
+                self.tokens.append(self.resolve_integer())
                 self.advance()
 
             elif self.current_char.isalpha():
@@ -108,8 +132,8 @@ class LexerDFA:
                         self.current_char = None
                     else:
                         self.current_char = self.input_string[self.current_position]
-
-        
+            else: 
+                raise UnexpectedCharacter(self.current_char)
 
 
 if __name__ == '__main__':
@@ -119,5 +143,35 @@ if __name__ == '__main__':
         input_string = ''
     
     lexer = LexerDFA(input_string)
-    lexer.run()
-    print(lexer.tokens)
+    try:
+        lexer.run()
+        print(lexer.tokens)
+    except Exception as e:
+        print(e)
+    
+    
+# <IDENTIGIER, >
+# // this will load a csv file and create an instance of the csv file as table2 
+
+# table1 = load class_roster.csv
+
+# // output rows and columns
+
+# show rows table1
+# show columns	table1
+
+# // select function
+
+# sub_table = get (NAME, AGE, YEAR) IN table1
+
+# // selecting the year column, getting the average age of each year in the table and creating a new group table -> example below
+
+# group_table = avg(age) group by (YEAR) IN sub_table
+
+# // creates a new csv file called group_table.csv with those changes
+# chart1 = convert group_table to bar chart
+
+
+# output group_table TO group_table_file as CSV 
+# output group_table TO group_table_file as PDF
+# output group_table TO chart1 as JPEG 
