@@ -1,11 +1,21 @@
 #!/bin/bash
 
 run_lexer() {
-    echo "Available files:"
-    ls *.txt 2>/dev/null
+    echo "Available tests:"
     
-    echo 
-    echo "Please enter the name of the file you would like to tokenize (or 'exit' to quit):"
+    # List all files and number them
+    files=($(ls sample_programs/*.ease 2>/dev/null))
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "No .ease files found."
+        return
+    fi
+    
+    for i in "${!files[@]}"; do
+        echo "$((i+1)). ${files[$i]}"
+    done
+    
+    echo
+    echo "Please enter the number of the file you would like to tokenize (or 'exit' to quit):"
     read user_input
 
     # Check if the user wants to exit
@@ -14,14 +24,23 @@ run_lexer() {
         exit 0
     fi
 
-    # Check if the file exists
-    if [ ! -f "$user_input" ]; then
-        echo "File not found. Please try again."
-        return  # Return to the main loop
+    # Validate the input as a number
+    if ! [[ "$user_input" =~ ^[0-9]+$ ]]; then
+        echo "Invalid input. Please enter a number."
+        return
     fi
 
-    # Call the Python lexer with the chosen file
-    python3 CSVeaseLexer.py "$user_input"
+    # Get the selected file
+    file_index=$((user_input-1))
+    if [ $file_index -lt 0 ] || [ $file_index -ge ${#files[@]} ]; then
+        echo "Invalid selection. Please try again."
+        return
+    fi
+    
+    selected_file="${files[$file_index]}"
+
+    # Call the Python lexer with the selected file
+    python3 CSVeaseLexer.py "$selected_file"
     echo
 
     # Ask if the user wants to run it again
