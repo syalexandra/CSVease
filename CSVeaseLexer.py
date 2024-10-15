@@ -24,7 +24,7 @@ class Line:
           '+': 'PLUS',
         }
         
-        self.KEYWORDS = ['SHOW', 'LOAD', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG']
+        self.KEYWORDS = ['SHOW','FROM', 'LOAD','DATA', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG']
         
         self.MODIFIERS = {
             ',': 'COMMA',
@@ -199,6 +199,7 @@ class CSVeaseLexer:
                     self.errors.InvalidSequence(line, self.current_line_no, e.error)
     
     def print_tokens(self):
+        """
         count = {}
         for token in self.tokens:
             token_class, value = token
@@ -218,6 +219,10 @@ class CSVeaseLexer:
             for value in count[key]:
                 token_class, token_val = value
                 print(f"    <{token_class}, '{token_val}'>")
+        """
+        for token in self.tokens:
+            token_class, token_val = token
+            print(f"    <{token_class}, '{token_val}'>")
         
 
 if __name__ == '__main__':
