@@ -28,7 +28,7 @@ class LexerErrors:
             self.errors.append(f"{line_info} {line}\n{error_info}")
 
     def InvalidString(self, line, lineNo, error):
-        self.error_count += 1 
+        self.error_count += 1
         line_info = f"{self.YELLOW}Line {lineNo}:{self.RESET}"
         error_info = f"{self.RED}ERROR{self.RESET} Unterminated string literal: {error}"
         if "\n" in line:

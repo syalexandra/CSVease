@@ -24,7 +24,7 @@ class Line:
           '+': 'PLUS',
         }
         
-        self.KEYWORDS = ['SHOW','FROM', 'LOAD','DATA', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG']
+        self.KEYWORDS = ['SHOW','FROM', 'LOAD','DATA', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG','AVG','BAR','CHART']
         
         self.MODIFIERS = {
             ',': 'COMMA',
@@ -103,7 +103,30 @@ class Line:
             return []
         
         while self.current_char is not None:
-            if self.current_char.isspace():
+
+            if self.current_char != '"' and self.current_char != "'" and self.prev_class == "STRING" and len(self.mod_stack) >0:
+                self.raw_word += self.current_char
+                self.advance()
+                continue
+
+            # parsing for strings
+            if self.current_char == '"' or self.current_char == "'":
+                if len(self.mod_stack) == 0:
+                    self.prev_class = "STRING"
+                    self.mod_stack.append(self.current_char)
+                else:
+                    stack_top = self.mod_stack[-1]
+                    if self.current_char == stack_top:
+                        self.mod_stack.pop()
+                        self.line_tokens.append(('STRING', self.raw_word))
+                        self.prev_class = "STRING"
+                        self.raw_word = ""
+                    else:
+                        self.raw_word += self.current_char
+
+                self.advance()  # Update the current character
+    
+            elif self.current_char.isspace():
                 if len(self.raw_word) != 0:
                     self.keyword_or_identifier()
                     
@@ -114,13 +137,15 @@ class Line:
             
             # checking for identifier -- Second priority
             elif self.current_char.isalpha() or self.current_char == "_":
-                    self.raw_word+=self.current_char
-                    self.advance()
-                    self.prev_class = "LITERAL"
-                    continue
-    
+                self.raw_word+=self.current_char
+                self.prev_class = "IDENTIFIER"
+                self.advance()
+                continue
             # checking for operator
-            elif self.current_char in self.OP_TOKENS and self.valid_operator():
+            elif self.current_char in self.OP_TOKENS:# and self.valid_operator(): is valid_operator required?
+                if len(self.raw_word) != 0:
+                    self.keyword_or_identifier()
+                    
                 self.line_tokens.append((self.OP_TOKENS[self.current_char], self.current_char))
                 self.prev_class = 'OPERATOR'
                 self.advance()
@@ -128,14 +153,14 @@ class Line:
             
             # checking for modifier 
             elif self.current_char in self.MODIFIERS:
-                if len(self.raw_word) != 0 and (self.current_char == "_" or self.current_char == "."):
-                    self.raw_word += self.current_char
-                    self.advance()
-                    continue
-                self.line_tokens.append((self.MODIFIERS[self.current_char], self.current_char))
-                self.prev_class = 'MODIFIER'
+                if len(self.raw_word) != 0:
+                    self.keyword_or_identifier()
+                
+
+                self.prev_class = self.MODIFIERS[self.current_char]
+                self.line_tokens.append((self.prev_class,self.current_char))
                 self.advance()
-                continue 
+                    
             
             # checking for integer value 
             elif self.current_char.isdigit():
@@ -143,29 +168,17 @@ class Line:
                     self.line_tokens.append(self.resolve_integer())
                     self.prev_class = 'INTEGER'
                 else:
-                    self.prev_class = "LITERAL"
+                    self.prev_class = "IDENTIFIER"
                     self.raw_word += self.current_char
                     
                 self.advance()
                 continue
-            
-            # parsing for strings
-            elif self.current_char == '"' or self.current_char == "'":
-                if len(self.mod_stack) == 0:
-                    self.prev_class = "LITERAL"
-                    self.mod_stack.append(self.current_char)
-                else:
-                    self.mod_stack.pop()
-                    self.line_tokens.append(('STRING', self.raw_word))
-                    self.prev_class = "STRING"
-                    self.raw_word = ""              
-                self.advance()  # Update the current character
+
             
             # doesn't matter what character, if it is in quotes it is fine
-            elif len(self.mod_stack) >0: 
-                self.raw_word += self.current_char
-                self.advance()
-            
+            #elif len(self.mod_stack) >0: 
+            #    self.raw_word += self.current_char
+            #    self.advance()
             else:
                 raise UnexpectedCharacter(self.current_char)
     
