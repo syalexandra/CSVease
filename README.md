@@ -66,7 +66,7 @@ If the user already has Python installed, to run our testing script.
 
 Run `chmod +x test.sh`
 
-Then, run './test.sh`
+Then, run `./test.sh`
 
 ## Sample Program Output
 
