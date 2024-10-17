@@ -1,0 +1,25 @@
+// Testing for InvalidString Error
+LOAD "data/file.csv INTO dataset_1
+LOAD "data/file.csv INTO dataset_1'
+LOAD "data/file.csv INTO dataset_1'"
+LOAD "("data/file.csv','data/file1.csv')" INTO dataset_1
+
+// Testing for Invalid sequence
+GET 50 COLUMNS from 123table
+GET 500_1 COLUMNS from 123_tabl
+
+// Testing for Unexpected Character -> should report an error
+~ SELECT 
+
+// Testing for Unexepected Character -> should report no error
+
+LOAD "~.csv" 
+
+
+
+
+
+
+
+
+
