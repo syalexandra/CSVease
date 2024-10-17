@@ -49,6 +49,8 @@ We have developed different exceptions and errors for our lexer. The lexer will 
 <DOT, '.'>
 
 ## How to Test CSVEase Lexer
+
+### Using Docker
 In order for easy testing, we have provided a Dockerfile which uses the official Python image from the Docker Hub. 
 
 To build the Docker image, run `docker build -t csvease .`
@@ -59,6 +61,12 @@ Once you run the container, the container will automatically run the bash script
 
 More details on the sample programs and their expected outputs below.
 
+### Using Python 
+If the user already has Python installed, to run our testing script. 
+
+Run `chmod +x test.sh`
+
+Then, run './test.sh`
 
 ## Sample Program Output
 
