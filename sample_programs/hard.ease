@@ -1,7 +1,3 @@
-// Level: Hard --> Complex string parsing
 
-LOAD "C:/Data/file.csv" INTO dataset
-LOAD ("data/file.csv",'data/file1.csv') INTO dataset_1
 LOAD "('data/file.csv','data/file1.csv')" INTO dataset_1
-CONVERT dataset TO PDF OUTPUT "final_output.pdf"
 

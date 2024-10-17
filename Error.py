@@ -8,15 +8,6 @@ class LexerErrors:
     YELLOW = "\033[93m"
     RED = "\033[91m"
     RESET = "\033[0m"
-    
-    def BadIdentifier(self, line, lineNo):
-        self.error_count += 1
-        line_info = f"{self.YELLOW}Line {lineNo}:{self.RESET}"
-        error_info = f"{self.RED}ERROR{self.RESET} Invalid identifier format"
-        if "\n" in line:
-            self.errors.append(f"{line_info} {line}{error_info}")
-        else:
-            self.errors.append(f"{line_info} {line}\n{error_info}")
           
     def UnexpectedCharacter(self, line, lineNo, error):
         self.error_count += 1

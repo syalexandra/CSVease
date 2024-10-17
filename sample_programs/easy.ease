@@ -1,4 +1,1 @@
-// Level: Easy --> Simple keyword and identifier parsing
-
-SHOW COLUMNS FROM employees
 LOAD DATA INTO sales_data
