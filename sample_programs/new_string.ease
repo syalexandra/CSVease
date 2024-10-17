@@ -1,0 +1,7 @@
+//LOAD "data/file.csv INTO dataset_1
+//LOAD "data/file.csv INTO dataset_1'
+//LOAD "data/file.csv INTO dataset_1'"
+//LOAD "("data/file.csv','data/file1.csv')" INTO dataset_1
+//LOAD "('data/file.csv','data/file1.csv')" INTO dataset_1
+sub_table = get (NAME,AGE, YEAR) IN table1
+sub_table_1=get(NAME,AGE,YEAR) IN table1
