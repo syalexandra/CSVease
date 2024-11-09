@@ -1,5 +1,5 @@
-S -> A | B | C | D | E | F | Id = S
-A -> LOAD X INTO Id | LOAD X
+S -> LOAD A | B | C | D | E | F | Id = S
+A -> X INTO Id | X
 X -> DATA | String
 B -> SHOW Y IN Id
 Y -> ROWS | COLUMNS
