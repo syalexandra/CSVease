@@ -37,15 +37,9 @@ class Parser:
                     ("Aa",'INTO'): [Entry(True, ('INTO', 'INTO')), Entry(False, "Aaa")],
                     ("Aaa",'IDENTIFIER'):[Entry(True, ('IDENTIFIER', None)), Entry(False, "Aaaa")],
                     ("Aaaa", '$'): None,
-                    ("S", 'SHOW'): [Entry(True, ('SHOW', 'SHOW')), Entry(False, "B")],
-                    ("B", 'ROWS'): [Entry(True, ('ROWS', 'ROWS')), Entry(False, "Ba")],
-                    ("B", 'COLUMNS'): [Entry(True, ('COLUMNS', 'COLUMNS')), Entry(False, "Bb")],
-                    ("Ba", 'IN'): [Entry(True, ('IN', 'IN')), Entry(False, "Baa")],
-                    ("Baa", 'IDENTIFIER'): [Entry(True, ('IDENTIFIER', None)), Entry(False, "Baaa")],
-                    ("Baaa", '$'): None,
-                    ("Bb", 'IN'): [Entry(True, ('IN', 'IN')), Entry(False, "Bba")],
-                    ("Bba", 'IDENTIFIER'): [Entry(True, ('IDENTIFIER', None)), Entry(False, "Bbaa")],
-                    ("Bbaa", '$'): None,
+                    ("S", 'SHOW'): [Entry(True, ('SHOW', 'SHOW')), Entry(False, "B"), Entry(True, ('IN', 'IN')), Entry(True, ('IDENTIFIER', None))],
+                    ("B", 'ROWS'): [Entry(True, ('ROWS', 'ROWS'))],
+                    ("B", 'COLUMNS'): [Entry(True, ('COLUMNS', 'COLUMNS'))],
                     ("S", "GET"): [Entry(True, ("GET", "GET")), Entry(False, "C")],
                     ("C", "INTEGER"): [Entry(True, ("INTEGER", None)), Entry(False, "Ca")],
                     ("Ca", "ROWS"): [Entry(True, ("ROWS", "ROWS")), Entry(False, "Caa")],
@@ -126,12 +120,41 @@ class Parser:
         result += "]"
         return result
     
-    def buildASTfromLL1(self):
+    def buildASTfromLL1_old(self):
         terminal = 'S'
         currentToken = self.peek()
         entryList = self.LL1[(terminal, currentToken[0])]
         root = self.buildNode(entryList)
         return root
+    
+    def buildASTfromLL1(self):
+        stack = [Entry(False,'S')]
+        buffer = [('$', '$')] + self.tokens[::-1]
+        root = Node('S',[])
+
+        while True:
+            if len(stack) == 0 and buffer == [('$', '$')]:
+                return
+            
+            elif stack[0].isTerminal:
+                if stack[0] == buffer[-1]:
+                    buffer = buffer[:-1]
+                    stack = stack[1:]
+                else:
+                    raise Exception("Invalid")
+
+
+            else:
+                stack_top = stack[0]
+                input = buffer[-1]
+                entryList = self.LL1[(stack_top, input)]
+                stack = entryList + stack[1:]
+                
+
+
+
+
+
 
 
 if __name__=='__main__':
@@ -142,6 +165,7 @@ if __name__=='__main__':
         [('GET','GET'),('IDENTIFIER','COLUMN1'), ('PLUS', '+'), ("IDENTIFIER", 'COLUMN2'), 
          ('PLUS', '+'), ("IDENTIFIER", 'COLUMN3'), ("FROM", 'FROM'), ("IDENTIFIER", 'TABLE1'),('$', '$')]
     ]
+    test_cases = [[('SHOW','SHOW'),('ROWS','ROWS'),('IN','IN'),('IDENTIFIER','sales_data'), ('$', '$')]]
     
     print("Testing Parser with different inputs:")
     print("=" * 50)
