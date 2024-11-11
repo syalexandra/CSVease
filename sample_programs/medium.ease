@@ -1,1 +1,11 @@
 GET 50 COLUMNS1+COLUMNS_1 FROM table1
+
+S -> GET A FROM B | LOAD D INTO B | Identifier = L
+L -> LOAD String
+A -> C | Identifier 
+B -> Identifier
+C -> Int E
+D->  String 
+E -> B OP E | B
+
+

@@ -1,159 +1,242 @@
-from Error import ParserError
-
 class Node:
-    def __init__(self, token, children):
-        self.token = token
-        self.children = children if children else []
-        
-    def __repr__(self):
-        """Returns a string representation of the node and its children"""
-        token_type, token_value = self.token
-        node_str = token_type
-        if token_value is not None and token_value != token_type:
-            node_str += f"({token_value})"
-            
-        return node_str
-    
-class Entry:
-    # if it is a terminal, value is the token, if it is not a terminal, value is a string
-    def __init__(self, isTerminal, value):
-        self.isTerminal = isTerminal
+    def __init__(self, type: str, value=None, children=None):
+        self.type = type
         self.value = value
-
-
+        self.children = children if children is not None else []
+    
+    def __str__(self):
+        if self.value and self.value != self.type:
+            return f"{self.type}({self.value})"
+        elif self.type in ['LPAREN', 'RPAREN', 'EQ', 'COMMA']:
+            return self.type_to_symbol()
+        return self.type
+        
+    def type_to_symbol(self):
+        symbols = {
+            'LPAREN': '(',
+            'RPAREN': ')',
+            'EQ': '=',
+            'COMMA': ','
+        }
+        return symbols.get(self.type, self.type)
+    
 class Parser:
     def __init__(self, tokens):
-        if not tokens:
-            raise ParserError("Empty token stream")
-        if tokens[-1][0] != '$':
-            raise ParserError("Token stream must end with EOF ($) token")
         self.tokens = tokens
         self.current = 0
-
-        self.LL1 = {("S", 'LOAD'): [Entry(True, ('LOAD', 'LOAD')), Entry(False, "A")],
-                    ("A", 'DATA'): [Entry(True, ('DATA', 'DATA')), Entry(False, "Aa")],
-                    ("A", 'STRING'): [Entry(True, ('STRING', None)), Entry(False, "Aa")],
-                    ("Aa", '$'): None,
-                    ("Aa",'INTO'): [Entry(True, ('INTO', 'INTO')), Entry(False, "Aaa")],
-                    ("Aaa",'IDENTIFIER'):[Entry(True, ('IDENTIFIER', None)), Entry(False, "Aaaa")],
-                    ("Aaaa", '$'): None,
-                    ("S", 'SHOW'): [Entry(True, ('SHOW', 'SHOW')), Entry(False, "B")],
-                    ("B", 'ROWS'): [Entry(True, ('ROWS', 'ROWS')), Entry(False, "Ba")],
-                    ("B", 'COLUMNS'): [Entry(True, ('COLUMNS', 'COLUMNS')), Entry(False, "Bb")],
-                    ("Ba", 'IN'): [Entry(True, ('IN', 'IN')), Entry(False, "Baa")],
-                    ("Baa", 'IDENTIFIER'): [Entry(True, ('IDENTIFIER', None)), Entry(False, "Baaa")],
-                    ("Baaa", '$'): None,
-                    ("Bb", 'IN'): [Entry(True, ('IN', 'IN')), Entry(False, "Bba")],
-                    ("Bba", 'IDENTIFIER'): [Entry(True, ('IDENTIFIER', None)), Entry(False, "Bbaa")],
-                    ("Bbaa", '$'): None,
-                    ("S", "GET"): [Entry(True, ("GET", "GET")), Entry(False, "C")],
-                    ("C", "INTEGER"): [Entry(True, ("INTEGER", None)), Entry(False, "Ca")],
-                    ("Ca", "ROWS"): [Entry(True, ("ROWS", "ROWS")), Entry(False, "Caa")],
-                    ("Caa", "FROM"): [Entry(True, ("FROM", "FROM")), Entry(False, "Caaa")],
-                    ("C", "IDENTIFIER"): [Entry(True, ("IDENTIFIER", None)), Entry(False, "Cb")],
-                    ("Cb", "PLUS"): [Entry(True, ("PLUS", "PLUS")), Entry(False, "C")],
-                    ("Cb", "FROM"): [Entry(True, ("FROM", "FROM")), Entry(False, "Cba")],
-                    ("Cba", "IDENTIFIER"): [Entry(True, ("IDENTIFIER", None)), Entry(False, "Cbaa")],
-                    ("Cbaa", '$'): None,
-                    ('S', 'IDENTIFIER'): [Entry(True, ('IDENTIFIER', None)), Entry(False, 'X')],
-                    ('X', 'EQ'): [Entry(True, ('EQ', '=')), Entry(False, 'S')],
-
-                    }
         
+        self.parse_table = {
+            ('S', 'IDENTIFIER'): ['BaseStmt'],
+            ('S', 'GET'): ['BaseStmt'],
+            ('S', 'LOAD'): ['BaseStmt'],
+            ('S', 'OUTPUT'): ['OutputStmt'],
+            
+            ('BaseStmt', 'IDENTIFIER'): ['AssignStmt'],
+            ('BaseStmt', 'GET'): ['GetStmt'],
+            ('BaseStmt', 'LOAD'): ['LoadStmt'],
+            
+            ('AssignStmt', 'IDENTIFIER'): ['IDENTIFIER', 'EQ', 'BaseStmt'],
+            
+            ('GetStmt', 'GET'): ['GET', 'GetTarget', 'FROM', 'B'],
+            
+            ('GetTarget', 'LPAREN'): ['ColumnList'],
+            ('GetTarget', 'IDENTIFIER'): ['B'],
+            
+            ('ColumnList', 'LPAREN'): ['LPAREN', 'IdList', 'RPAREN'],
+            
+            ('IdList', 'IDENTIFIER'): ['IDENTIFIER', 'IdListTail'],
+            
+            ('IdListTail', 'COMMA'): ['COMMA', 'IDENTIFIER', 'IdListTail'],
+            ('IdListTail', 'RPAREN'): [],  # ε production
+            
+            ('LoadStmt', 'LOAD'): ['LOAD', 'B'],
+            
+            ('OutputStmt', 'OUTPUT'): ['OUTPUT', 'B', 'TO', 'B', 'AS', 'FileType'],
+            
+            ('FileType', 'CSV'): ['CSV'],
+            ('FileType', 'JPEG'): ['JPEG'],
+            ('FileType', 'PDF'): ['PDF'],
+            
+            ('B', 'IDENTIFIER'): ['IDENTIFIER']
+        }
+
+
+    def build_id_list_tail_node(self, production):
+        if not production:
+            return None
+            
+        node = Node('ID_LIST')
+        self.advance() 
+        id_token = self.advance() 
+        node.children.append(Node('IDENTIFIER', id_token[1]))
+        
+        next_token = self.peek()
+        if next_token[0] == 'COMMA':
+            tail_node = self.parse_non_terminal('IdListTail')
+            if tail_node:
+                node.children.extend(tail_node.children)
+                        
+        return node
+    
     def peek(self):
         if self.current >= len(self.tokens):
-            raise ParserError("Unexpected end of input")
+            return ('$', '$')
         return self.tokens[self.current]
     
-    def lookahead(self):
-        if self.current + 1 >= len(self.tokens):
-            raise ParserError("Unexpected end of input while looking ahead")
-        return self.tokens[self.current + 1]
-    
-    def previous(self):
-        if self.current <= 0:
-            raise ParserError("Cannot get previous token at start of input")
-        return self.tokens[self.current - 1]
-    
     def advance(self):
-        if self.current >= len(self.tokens) - 1:
-            raise ParserError("Cannot advance past end of input")
+        token = self.peek()
         self.current += 1
-    
-    def match(self, tokenList):
-        currentToken = self.peek()
-        for token in tokenList:
-            if currentToken[0] == token[0]:
-                if token[1] is None or currentToken[1] == token[1]:
-                    self.advance()
-                    return True
-        return False
-    
+        return token
+
     def parse(self):
-        return self.expression()
-
-    def buildNode(self, entryList):
-        if entryList is None:
-            return None
-        ret_list = []
-        for entry in entryList:
-            if entry.isTerminal == True:
-                nextToken = self.peek()
-                ret_list.append(Node(nextToken, None))
-            else:
-                self.advance()
-                nextToken = self.peek()
-                nextEntryList = self.LL1[(entry.value, nextToken[0])]
-                node = self.buildNode(nextEntryList)
-                if node:
-                    ret_list.append(node)
-        return ret_list
-
-    def print_ast(self, nodes, level=0):
-        if not nodes:
-            return ""
-        
-        indent = "  " * level
-        result = indent + "["
-        
-        # Print first node
-        result += str(nodes[0])
-        
-        # If there are children (nodes[1]), print them recursively
-        if len(nodes) > 1 and nodes[1]:
-            result += ",\n" + self.print_ast(nodes[1], level + 1)
-            
-        result += "]"
-        return result
+        return self.parse_non_terminal('S')
     
-    def buildASTfromLL1(self):
-        terminal = 'S'
-        currentToken = self.peek()
-        entryList = self.LL1[(terminal, currentToken[0])]
-        root = self.buildNode(entryList)
-        return root
+    def parse_non_terminal(self, non_terminal):
+        current_token = self.peek()
+        production = self.parse_table.get((non_terminal, current_token[0]))
+        
+        if not production:
+            raise Exception(f"No production found for {non_terminal} with token {current_token}")
+        
+        if non_terminal == 'S':
+            return self.build_s_node(production)
+        elif non_terminal == 'BaseStmt':
+            return self.build_base_stmt_node(production)
+        elif non_terminal == 'AssignStmt':
+            return self.build_assign_stmt_node(production)
+        elif non_terminal == 'GetStmt':
+            return self.build_get_stmt_node(production)
+        elif non_terminal == 'GetTarget':
+            return self.build_get_target_node(production)
+        elif non_terminal == 'ColumnList':
+            return self.build_column_list_node(production)
+        elif non_terminal == 'IdList':
+            return self.build_id_list_node(production)
+        elif non_terminal == 'IdListTail':
+            return self.build_id_list_tail_node(production)
+        elif non_terminal == 'LoadStmt':
+            return self.build_load_stmt_node(production)
+        elif non_terminal == 'OutputStmt':
+            return self.build_output_stmt_node(production)
+        elif non_terminal == 'FileType':
+            return self.build_file_type_node(production)
+        elif non_terminal == 'B':
+            return self.build_b_node(production)
+            
+    def build_s_node(self, production):
+        if production[0] == 'BaseStmt':
+            return self.parse_non_terminal('BaseStmt')
+        else:  
+            return self.parse_non_terminal('OutputStmt')
+            
+    def build_base_stmt_node(self, production):
+        if production[0] == 'AssignStmt':
+            return self.parse_non_terminal('AssignStmt')
+        elif production[0] == 'GetStmt':
+            return self.parse_non_terminal('GetStmt')
+        else:
+            return self.parse_non_terminal('LoadStmt')
+            
+    def build_assign_stmt_node(self, production):
+        node = Node('ASSIGN')
+        id_token = self.advance() 
+        node.children.append(Node('IDENTIFIER', id_token[1]))
+        self.advance() 
+        right_node = self.parse_non_terminal('BaseStmt')
+        node.children.append(right_node)
+        return node
+            
+    def build_get_stmt_node(self, production):
+        node = Node('GET')
+        self.advance() 
+        target_node = self.parse_non_terminal('GetTarget')
+        node.children.append(target_node)
+        self.advance() 
+        from_node = Node('FROM')
+        b_node = self.parse_non_terminal('B')
+        from_node.children.append(b_node)
+        node.children.append(from_node)
+        return node
+    
+    def build_get_target_node(self, production):
+        if production[0] == 'ColumnList':
+            return self.parse_non_terminal('ColumnList')
+        else:  # B
+            return self.parse_non_terminal('B')
+    
+    def build_column_list_node(self, production):
+        node = Node('COLUMN_LIST')
+        self.advance() 
+        id_list_node = self.parse_non_terminal('IdList')
+        node.children.append(id_list_node)
+        self.advance()  
+        return node
+    
+    def build_id_list_node(self, production):
+        node = Node('ID_LIST')
+        id_token = self.advance()  
+        node.children.append(Node('IDENTIFIER', id_token[1]))
+        tail_node = self.parse_non_terminal('IdListTail')
+        if tail_node:
+            node.children.extend(tail_node.children)
+        return node
+    
+    def build_load_stmt_node(self, production):
+        node = Node('LOAD')
+        self.advance() 
+        b_node = self.parse_non_terminal('B')
+        node.children.append(b_node)
+        return node
+    
+    def build_output_stmt_node(self, production):
+        node = Node('OUTPUT')
+        self.advance()  
+        source_node = self.parse_non_terminal('B')
+        node.children.append(source_node)
+        self.advance() 
+        dest_node = self.parse_non_terminal('B')
+        node.children.append(dest_node)
+        self.advance() 
+        type_node = self.parse_non_terminal('FileType')
+        node.children.append(type_node)
+        return node
+    
+    def build_file_type_node(self, production):
+        token = self.advance()
+        return Node('FILE_TYPE', token[0])
+    
+    def build_b_node(self, production):
+        id_token = self.advance()
+        return Node('IDENTIFIER', id_token[1])
 
+def print_ast(node, level=0):
+    if not node:
+        return ""
+    result = " " * level + str(node) + "\n"
+    for child in node.children:
+        result += print_ast(child, level + 1)
+    return result
 
-if __name__=='__main__':
-    test_cases = [
-        [('LOAD','LOAD'),('DATA','DATA'),('INTO','INTO'),('IDENTIFIER','sales_data'), ('$', '$')],
-        [('LOAD','LOAD'),('STRING','data.csv'), ('$', '$')],
-        [('IDENTIFIER','table1'),('EQ','='), ('LOAD', 'LOAD'), ("STRING", 'data.csv'), ('$', '$')],
-        [('GET','GET'),('IDENTIFIER','COLUMN1'), ('PLUS', '+'), ("IDENTIFIER", 'COLUMN2'), 
-         ('PLUS', '+'), ("IDENTIFIER", 'COLUMN3'), ("FROM", 'FROM'), ("IDENTIFIER", 'TABLE1'),('$', '$')]
+if __name__ == "__main__":
+    tokens1 = [
+        ('IDENTIFIER', 'table1'), ('EQ', '='), ('GET', 'GET'),
+        ('LPAREN', '('), ('IDENTIFIER', 'col1'), ('COMMA', ','),
+        ('IDENTIFIER', 'col2'), ('RPAREN', ')'),
+        ('FROM', 'FROM'), ('IDENTIFIER', 'source_table')
     ]
     
-    print("Testing Parser with different inputs:")
-    print("=" * 50)
+    tokens2 = [
+        ('OUTPUT', 'OUTPUT'), ('IDENTIFIER', 'table1'),
+        ('TO', 'TO'), ('IDENTIFIER', 'output.csv'),
+        ('AS', 'AS'), ('CSV', 'CSV')
+    ]
     
-    for i, tokens in enumerate(test_cases, 1):
-        print(f"\nTest Case {i}:")
-        print("-" * 20)
-        print("Input tokens:", tokens)
-        print("\nResulting AST:")
-        parser = Parser(tokens)
-        ast = parser.buildASTfromLL1()
-        print(parser.print_ast(ast))
-        print("=" * 50)
-
-
+    parser = Parser(tokens1)
+    ast = parser.parse()
+    print("AST for Assignment + GET:")
+    print(print_ast(ast))
+    
+    parser = Parser(tokens2)
+    ast = parser.parse()
+    print("\nAST for OUTPUT:")
+    print(print_ast(ast))
