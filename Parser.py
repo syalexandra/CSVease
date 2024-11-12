@@ -194,6 +194,7 @@ class Parser:
         source_node = self.parse_non_terminal('B')
         node.children.append(source_node)
         self.advance() 
+        
         dest_node = self.parse_non_terminal('B')
         node.children.append(dest_node)
         self.advance() 
@@ -218,23 +219,24 @@ def print_ast(node, level=0):
     return result
 
 if __name__ == "__main__":
-    tokens1 = [
-        ('IDENTIFIER', 'table1'), ('EQ', '='), ('GET', 'GET'),
-        ('LPAREN', '('), ('IDENTIFIER', 'col1'), ('COMMA', ','),
-        ('IDENTIFIER', 'col2'), ('RPAREN', ')'),
-        ('FROM', 'FROM'), ('IDENTIFIER', 'source_table')
-    ]
+    # tokens1 = [
+    #     ('IDENTIFIER', 'table1'), ('EQ', '='), ('GET', 'GET'),
+    #     ('LPAREN', '('), ('IDENTIFIER', 'col1'), ('COMMA', ','),
+    #     ('IDENTIFIER', 'col2'), ('RPAREN', ')'),
+    #     ('FROM', 'FROM'), ('IDENTIFIER', 'source_table')
+    # ]
     
     tokens2 = [
         ('OUTPUT', 'OUTPUT'), ('IDENTIFIER', 'table1'),
-        ('TO', 'TO'), ('IDENTIFIER', 'output.csv'),
+        ('IDENTIFIER', 'output.csv'),
         ('AS', 'AS'), ('CSV', 'CSV')
     ]
-    
+    """
     parser = Parser(tokens1)
     ast = parser.parse()
     print("AST for Assignment + GET:")
     print(print_ast(ast))
+    """
     
     parser = Parser(tokens2)
     ast = parser.parse()

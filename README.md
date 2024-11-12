@@ -160,6 +160,17 @@ ERROR Unexpected character: '~'.
 
 
 
+S -> AssignStmt | GetStmt | LoadStmt | OutputStmt 
+AssignStmt -> Identifier = RightStmt 
+RightStmt -> GetStmt | LoadStmt 
+GetStmt -> GET GetTarget FROM Identifier 
+GetTarget -> ColumnList | Identifier 
+ColumnList -> '(' IdList ')' 
+IdList -> Identifier IdListTail 
+IdListTail -> ',' Identifier IdListTail | ε 
+LoadStmt -> LOAD String 
+OutputStmt -> OUTPUT Identifier TO String AS FileType 
+FileType -> CSV | JPEG | PDF
 
 
 S -> AssignStmt | GetStmt | LoadStmt | OutputStmt
@@ -167,9 +178,11 @@ AssignStmt -> Identifier = RightStmt
 RightStmt -> GetStmt | LoadStmt
 GetStmt -> GET GetTarget FROM Identifier
 GetTarget -> ColumnList | Identifier
-ColumnList -> '(' IdList ')'
-IdList -> Identifier IdListTail
-IdListTail -> ',' Identifier IdListTail | ε
+ColumnList -> '(' IdOpList ')'
+IdOpList -> IdOp IdOpListTail
+IdOpListTail -> ',' IdOp IdOpListTail | ε
+IdOp -> Identifier IdOpTail
+IdOpTail -> Op IdOpTail | ε
 LoadStmt -> LOAD String
 OutputStmt -> OUTPUT Identifier TO String AS FileType
 FileType -> CSV | JPEG | PDF
