@@ -1,7 +1,7 @@
 import sys
 
-from Exception import InvalidString, UnexpectedCharacter, InvalidSequence
-from Error import LexerErrors
+from util_classes.Exception import InvalidString, UnexpectedCharacter, InvalidSequence
+from util_classes.Error import LexerErrors
 
 # TODO: do the error handling @ Phillip
 # identifier, but the id starts with a number -> throw an error
@@ -24,13 +24,13 @@ class Line:
           '+': 'PLUS',
         }
         
-        self.KEYWORDS = ['SHOW','FROM', 'LOAD','DATA', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG','AVG','BAR','CHART']
+        self.KEYWORDS = ['SHOW','FROM', 'LOAD', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG','AVG','BARCHART']
         
         self.MODIFIERS = {
             ',': 'COMMA',
             '.': 'DOT',
-            '(': 'LPAR',
-            ')': 'RPAR',
+            '(': 'LPAREN',
+            ')': 'RPAREN',
         }
         
         
@@ -73,7 +73,7 @@ class Line:
     
     def keyword_or_identifier(self):
         if self.raw_word.upper() in self.KEYWORDS:
-            self.line_tokens.append(('KEYWORD',self.raw_word.upper()))
+            self.line_tokens.append((self.raw_word.upper(),self.raw_word.upper()))
             self.raw_word = ""
         else:
             self.line_tokens.append(('IDENTIFIER', self.raw_word))
@@ -235,7 +235,7 @@ class CSVeaseLexer:
         """
         for token in self.tokens:
             token_class, token_val = token
-            print(f"    <{token_class}, '{token_val}'>")
+            print(f"{token}")
         
 
 if __name__ == '__main__':

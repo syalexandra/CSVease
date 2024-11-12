@@ -1,10 +1,6 @@
 class ParserError(Exception):
-    def __init__(self, message, token=None):
-        self.message = message
-        self.token = token
-        super().__init__(f"{message} at token: {token}" if token else message)
-        
-        
+    pass
+
 class LexerErrors:
     def __init__(self, file):
         self.errors = []

@@ -1,0 +1,7 @@
+('IDENTIFIER', 'sales_data')
+('WHITESPACE', ' ')
+('EQ', '=')
+('WHITESPACE', ' ')
+('LOAD', 'LOAD')
+('WHITESPACE', ' ')
+('STRING', 'table.csv')
