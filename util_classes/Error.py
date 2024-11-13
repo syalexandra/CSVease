@@ -1,3 +1,6 @@
+class ParserError(Exception):
+    pass
+
 class LexerErrors:
     def __init__(self, file):
         self.errors = []

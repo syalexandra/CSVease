@@ -1,21 +1,24 @@
 #!/bin/bash
 
-run_lexer() {
+run_test() {
     echo "Available tests:"
     
-    # List all files and number them
-    files=($(ls sample_programs/*.ease 2>/dev/null))
+    # List all files in testing directory
+    cd testing
+    files=($(ls))
     if [ ${#files[@]} -eq 0 ]; then
-        echo "No .ease files found."
+        echo "No test files found in testing directory."
+        cd ..
         return
     fi
     
     for i in "${!files[@]}"; do
         echo "$((i+1)). ${files[$i]}"
     done
+    cd ..
     
     echo
-    echo "Please enter the number of the file you would like to tokenize (or 'exit' to quit):"
+    echo "Which test would you like to run?"
     read user_input
 
     # Check if the user wants to exit
@@ -37,23 +40,61 @@ run_lexer() {
         return
     fi
     
-    selected_file="${files[$file_index]}"
+    if [ "${files[$file_index]}" = "lexer_test.sh" ]; then
+        echo "--------------------------"
+        echo "TESTING LEXER"
+        echo "--------------------------"
+    fi
 
-    # Call the Python lexer with the selected file
-    python3 CSVeaseLexer.py "$selected_file"
+    if [ "${files[$file_index]}" = "parser_test.sh" ]; then
+        echo "--------------------------"
+        echo "TESTING PARSER"
+        echo "--------------------------"
+    fi
+
+    if [ "${files[$file_index]}" = "pipeline.sh" ]; then
+        echo "--------------------------"
+        echo "TESTING PIPELINE"
+        echo "--------------------------"
+    fi
+
+    selected_test="testing/${files[$file_index]}"
+
+    # Execute the shell script
+    bash "$selected_test"
     echo
 
-    # Ask if the user wants to run it again
-    echo "Do you want to try a different file? (yes/no)"
+    if [ "${files[$file_index]}" = "lexer_test.sh" ]; then
+        echo "--------------------------"
+        echo "COMPLETED TESTING LEXER"
+        echo "--------------------------"
+        echo
+    fi
+
+    if [ "${files[$file_index]}" = "parser_test.sh" ]; then
+        echo "--------------------------"
+        echo "COMPLETED TESTING PARSER"
+        echo "--------------------------"
+        echo
+    fi
+
+    if [ "${files[$file_index]}" = "pipeline.sh" ]; then
+        echo "--------------------------"
+        echo "COMPLETED TESTING PIPELINE"
+        echo "--------------------------"
+        echo
+    fi
+
+
+    echo "Would you like to run another test? (yes/no)"
     read answer
+    if [ "$answer" != "yes" ]; then
+        echo "Exiting..."
+        exit 0
+    fi
 }
 
 # Start the loop
 while true; do
-    run_lexer
-
-    if [ "$answer" != "yes" ]; then
-        echo "Exiting..."
-        break
-    fi
+    run_test
 done

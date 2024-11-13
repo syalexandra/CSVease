@@ -1,3 +1,0 @@
-
-LOAD "('data/file.csv','data/file1.csv')" INTO dataset_1
-
