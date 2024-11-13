@@ -1,4 +1,5 @@
-# CSVease Lexer
+# CSVeaseLexer and CSVeaseLexer
+
 Developers: Phillip Le (pnl2111) and Yue Sun (ys3535)
 
 ## Lexical Grammar Rules (Descending Priority)
@@ -172,17 +173,77 @@ LoadStmt -> LOAD String
 OutputStmt -> OUTPUT Identifier TO String AS FileType 
 FileType -> CSV | JPEG | PDF
 
+# CSVeaseParser
 
-S -> AssignStmt | GetStmt | LoadStmt | OutputStmt
-AssignStmt -> Identifier = RightStmt
-RightStmt -> GetStmt | LoadStmt
-GetStmt -> GET GetTarget FROM Identifier
-GetTarget -> ColumnList | Identifier
-ColumnList -> '(' IdOpList ')'
-IdOpList -> IdOp IdOpListTail
-IdOpListTail -> ',' IdOp IdOpListTail | ε
-IdOp -> Identifier IdOpTail
-IdOpTail -> Op IdOpTail | ε
-LoadStmt -> LOAD String
-OutputStmt -> OUTPUT Identifier TO String AS FileType
+### Link to video: https://youtu.be/_Jc5E0kkL3Q
+
+## Context Free Grammar
+```
+S -> StmtList
+
+StmtList -> BaseStmt StmtListTail
+
+StmtListTail -> BaseStmt StmtListTail | ε
+
+BaseStmt -> AssignStmt | ConvertStmt | GetStmt | LoadStmt | ShowStmt | OutputStmt
+
+AssignStmt -> IDENTIFIER EQ BaseStmt
+
+ConvertStmt -> CONVERT IDENTIFIER TO ChartType
+
+GetStmt -> GET GetTarget FROM IDENTIFIER
+
+GetTarget -> LPAREN ColumnList RPAREN | IDENTIFIER
+
+ColumnList -> IDENTIFIER ColumnListTail
+
+ColumnListTail -> COMMA IDENTIFIER ColumnListTail | ε
+
+LoadStmt -> LOAD STRING
+
+OutputStmt -> OUTPUT IDENTIFIER TO STRING AS FileType
+
+ShowStmt -> SHOW ShowOptions IDENTIFIER
+
+ShowOptions -> ROWS | COLUMNS
+
 FileType -> CSV | JPEG | PDF
+
+ChartType -> BARCHART
+```
+## Terminals
+```python
+self.terminals = [
+            'IDENTIFIER', 'SHOW', 'GET', 'LOAD', 'INTO', 'FROM', 'TO', 'OUTPUT',
+            'ROWS', 'COLUMNS', 'LPAREN', 'COMMA', 'RPAREN', 'LPAR', 'RPAR',
+            'OUTPUT', 'CSV', 'JPEG', 'PDF', 'EQ', 'PLUS', 'AS', 'STRING',
+            'IN', 'AVG', 'GROUP_BY', 'CONVERT', 'BARCHART'
+        ]
+```
+## NonTerminals
+1. S 
+2. StmtList 
+3. StmyListTail 
+4. BaseStmt 
+5. AssignStmt
+6. ConvertStmt 
+
+## How to Test CSVEase Parser
+
+### Using Docker
+In order for easy testing, we have provided a Dockerfile which uses the official Python image from the Docker Hub. 
+
+To build the Docker image, run `docker build -t csvease .`
+
+To run the container, run `docker run -it --rm csvease`
+
+Once you run the container, the container will automatically run the bash script that we developed, `test.sh`. We have included 5 sample programs in the `/sample_programs` directory. The script automates the testing process by providing the user with all the available sample programs, and allowing the user to test which one to run. 
+
+More details on the sample programs and their expected outputs below.
+
+### Using Python 
+If the user already has Python installed, to run our testing script. 
+
+Run `chmod +x test.sh`
+
+Then, run `./test.sh`

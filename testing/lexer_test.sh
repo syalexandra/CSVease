@@ -2,16 +2,16 @@
 
 run_lexer() {
     echo "Available tests:"
-    
+    cd input/
     # List all files and number them
-    files=($(ls sample_programs/*.ease 2>/dev/null))
+    files=($(ls *.ease 2>/dev/null))
     if [ ${#files[@]} -eq 0 ]; then
         echo "No .ease files found."
         return
     fi
     
     for i in "${!files[@]}"; do
-        echo "$((i+1)). ${files[$i]}"
+        echo "$((i+1)). $(basename ${files[$i]})"  # Just show filename without path
     done
     
     echo
@@ -34,13 +34,12 @@ run_lexer() {
     file_index=$((user_input-1))
     if [ $file_index -lt 0 ] || [ $file_index -ge ${#files[@]} ]; then
         echo "Invalid selection. Please try again."
-        return
+        return  # Fixed typo 'returnå'
     fi
     
     selected_file="${files[$file_index]}"
-
     # Call the Python lexer with the selected file
-    python3 CSVeaseLexer.py "$selected_file"
+    python3 ../CSVeaseLexer.py "$selected_file"
     echo
 
     # Ask if the user wants to run it again

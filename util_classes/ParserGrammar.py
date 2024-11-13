@@ -3,12 +3,6 @@ class ParserGrammar:
         self._init_terminals()
         self._init_parse_table()
     
-    def get_terminals(self):
-      return self.terminals 
-    
-    def get_parse_table(self):
-      return self.parse_table
-    
     def _init_terminals(self):
         self.terminals = [
             'IDENTIFIER', 'SHOW', 'GET', 'LOAD', 'INTO', 'FROM', 'TO', 'OUTPUT',

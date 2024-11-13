@@ -1,2 +1,0 @@
-sub_table = get (NAME,AGE, YEAR) IN table1
-sub_table_1=get(NAME,AGE,YEAR) IN table1

@@ -2,47 +2,20 @@ import sys
 from util_classes.ParserGrammar import ParserGrammar
 from util_classes.Error import ParserError
 from util_classes.Node import Node
-    
+from CSVeaseLexer import CSVeaseLexer
+
 class CSVeaseParser:
-    def __init__(self, input_file):
-        self.input_file=input_file
-        self.tokens = self.resolve_tokens()
+    def __init__(self, tokens):
+        self.tokens = tokens
+        self.remove_white_space()
         self.current = 0
         self.stack = []
         self.buffer = []
         self.grammar = ParserGrammar()
-            
-    def resolve_tokens(self):
-        tokens = []
-        with open(self.input_file, "r") as file:
-            for line in file:
-                # Remove whitespace and parentheses
-                
-                line = line.strip().strip('()')
-                if not line:
-                    continue
-                
-                if line == "'COMMA', ','":
-                    tokens.append(('COMMA', ','))
-                    continue
-                
-                parts = line.split(',')
-                
-                if len(parts) != 2:
-                    raise ParserError(f"Invalid token format in line: {line}")
-                    
-                # Clean up each part
-                token_type = parts[0].strip().strip("'").strip('"')
-                token_value = parts[1].strip().strip("'").strip('"')
-                
-                # Clean WHITESPACE
-                if token_type == 'WHITESPACE':
-                    continue
-                # Create tuple
-                token = (token_type, token_value)
-                tokens.append(token)
-        return tokens
-                    
+
+    def remove_white_space(self):
+        self.tokens = [t for t in self.tokens if t[0] != "WHITESPACE"]
+        
     def peek(self):
         if self.current >= len(self.tokens):
             return ('$', '$')
@@ -153,7 +126,8 @@ class CSVeaseParser:
         elif parse_node.type == "ShowStmt":
             if len(parse_node.children) < 3:
                 raise ParserError("ShowStmt has no children")
-            show_type = parse_node.children[1].type
+            show_type = parse_node.children[1].children[0].type
+            print(show_type)
             identifier = parse_node.children[2].value
             return Node("Show", children=[
                 Node("ShowType", show_type), 
@@ -261,8 +235,9 @@ if __name__ == "__main__":
     else:
         print("Error: missing input file")
         exit()  # Correctly exit with parentheses
-    
-    parser = CSVeaseParser(file)
+    lexer = CSVeaseLexer(file)
+    lexer.resolve_tokens()
+    parser = CSVeaseParser(lexer.tokens)
     result = parser.parse()
     ast = format_ast(result)
     print(ast)
