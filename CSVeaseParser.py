@@ -100,7 +100,7 @@ class CSVeaseParser:
                 raise ParserError("Invalid CONVERT statement structure")
             return Node("Convert", children=[
                 Node("Identifier", parse_node.children[1].value),
-                Node("ChartType", parse_node.children[3].type)
+                Node("ChartType", parse_node.children[3].value)
             ])
             
         elif parse_node.type == 'LoadStmt':
@@ -116,7 +116,7 @@ class CSVeaseParser:
             from_identifier = parse_node.children[-1] 
             return Node("Get", children=[
                 columns, 
-                Node("From", from_identifier.value)
+                Node("Identifier", from_identifier.value)
             ])
 
         elif parse_node.type == "GetTarget":
@@ -127,7 +127,6 @@ class CSVeaseParser:
             if len(parse_node.children) < 3:
                 raise ParserError("ShowStmt has no children")
             show_type = parse_node.children[1].children[0].type
-            print(show_type)
             identifier = parse_node.children[2].value
             return Node("Show", children=[
                 Node("ShowType", show_type), 
