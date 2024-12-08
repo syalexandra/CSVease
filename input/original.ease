@@ -7,13 +7,12 @@ show columns table1
 
 // select function
 
-sub_table = get (NAME, AGE, YEAR) from table1
+sub_table = get (NAME, AGE, YEAR, SCORE) from table1
 
+
+chart1 = convert group_table to barChart with YEAR SCORE
 
 // creates a new csv file called group_table.csv with those changes
-chart1 = convert group_table to barChart
-
-
 output group_table TO "group_table_file.csv" as CSV 
 output group_table TO "group_table_file.pdf" as PDF
 output group_table TO "chart1.jpeg" as JPEG 

@@ -100,7 +100,9 @@ class CSVeaseParser:
                 raise ParserError("Invalid CONVERT statement structure")
             return Node("Convert", children=[
                 Node("Identifier", parse_node.children[1].value),
-                Node("ChartType", parse_node.children[3].value)
+                Node("ChartType", parse_node.children[3].value),
+                Node("Identifier", parse_node.children[5].value),
+                Node("Identifier", parse_node.children[6].value),
             ])
             
         elif parse_node.type == 'LoadStmt':

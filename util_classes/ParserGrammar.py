@@ -8,7 +8,7 @@ class ParserGrammar:
             'IDENTIFIER', 'SHOW', 'GET', 'LOAD', 'INTO', 'FROM', 'TO', 'OUTPUT',
             'ROWS', 'COLUMNS', 'LPAREN', 'COMMA', 'RPAREN', 'LPAR', 'RPAR',
             'OUTPUT', 'CSV', 'JPEG', 'PDF', 'EQ', 'PLUS', 'AS', 'STRING',
-            'IN', 'AVG', 'GROUP_BY', 'CONVERT', 'BARCHART'
+            'IN', 'AVG', 'GROUP_BY', 'CONVERT', 'BARCHART','WITH'
         ]
     
     def _init_parse_table(self):
@@ -42,7 +42,7 @@ class ParserGrammar:
             ('BaseStmt', 'OUTPUT'): ['OutputStmt'],
             
             ('AssignStmt', 'IDENTIFIER'): ['IDENTIFIER', 'EQ', 'BaseStmt'],
-            ('ConvertStmt', 'CONVERT'): ['CONVERT', 'IDENTIFIER', 'TO', 'ChartType'],
+            ('ConvertStmt', 'CONVERT'): ['CONVERT', 'IDENTIFIER', 'TO', 'ChartType','WITH','IDENTIFIER','IDENTIFIER'],
             ('GetStmt', 'GET'): ['GET', 'GetTarget', 'FROM', 'IDENTIFIER'],
             
             ('GetTarget', 'LPAREN'): ['LPAREN','ColumnList', 'RPAREN'],
