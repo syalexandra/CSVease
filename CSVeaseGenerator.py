@@ -12,8 +12,7 @@ class CSVeaseGenerator:
     # TODO: export to temp python file and then actually execute it
     def run(self):
         res = self.generate(self.ast)
-        print(self.python_code + res)
-        exec(self.python_code + res)
+        exec(self.python_code + res)        
 
     def generate(self, node):
         if node.type == 'ProgramStart':
@@ -81,7 +80,6 @@ class CSVeaseGenerator:
                 return "jpeg"
             elif node.value == 'PDF':
                 return "pdf"
-            
             
         elif node.type == 'ChartType':
             if node.value == 'BARCHART':
