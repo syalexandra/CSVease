@@ -5,11 +5,15 @@ from CSVeaseParser import CSVeaseParser
 class CSVeaseGenerator:
     def __init__(self, ast):
         self.ast = ast
-        self.python_code = "import pandas as pd \n"
+        # TODO: implement the to PDF functionality
+        self.python_code = "import pandas as pd \nimport pdfkit\n"
 
+    # TODO: export to temp python file and then actually execute it
     def run(self):
         res = self.generate(self.ast)
-        print(self.python_code + res)
+        exec(self.python_code + res)
+
+        # print(self.python_code + res)
         
 
     def generate(self, node):
@@ -68,14 +72,7 @@ class CSVeaseGenerator:
         elif node.type == 'FileType':
             if node.value == 'CSV':
                 return "to_csv"
-    
-            ## note: output a dataset to pdf / csv is difficult, change to excel instead
             
-            
-
-
-
-
 if __name__ == "__main__":
     """
     if len(sys.argv) > 1:
@@ -90,4 +87,5 @@ if __name__ == "__main__":
     parser = CSVeaseParser(lexer.tokens)
     result = parser.parse()
     codegen = CSVeaseGenerator(result)
+
     codegen.run()
