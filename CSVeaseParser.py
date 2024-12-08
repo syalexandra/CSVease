@@ -161,6 +161,17 @@ class CSVeaseParser:
                 self.parse_tree_to_ast(parse_node.children[3]),  # STRING
                 self.parse_tree_to_ast(parse_node.children[5])   # FileType
             ])
+        
+        elif parse_node.type == 'DrawStmt':
+            if len(parse_node.children) < 6:
+                raise ParserError("Invalid DRAW statement structure")
+            if parse_node.children[3].type != "STRING":
+                raise ParserError("DRAW statement requires a string literal for file path")
+            return Node("Draw", children=[
+                self.parse_tree_to_ast(parse_node.children[1]),  # IDENTIFIER
+                self.parse_tree_to_ast(parse_node.children[3]),  # STRING
+                self.parse_tree_to_ast(parse_node.children[5])   # FileType
+            ])
             
         elif parse_node.type == "FileType":
             if not parse_node.children:

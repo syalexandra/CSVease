@@ -24,7 +24,7 @@ class Line:
           '+': 'PLUS',
         }
         
-        self.KEYWORDS = ['SHOW','FROM', 'LOAD', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG','AVG','BARCHART','WITH']
+        self.KEYWORDS = ['SHOW','FROM', 'LOAD', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG','AVG','BARCHART','WITH','DRAW']
         
         self.MODIFIERS = {
             ',': 'COMMA',

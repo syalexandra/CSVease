@@ -10,9 +10,10 @@ show columns table1
 sub_table = get (NAME, AGE, YEAR, SCORE) from table1
 
 
-chart1 = convert group_table to barChart with YEAR SCORE
+chart1 = convert sub_table to barChart with NAME SCORE
 
 // creates a new csv file called group_table.csv with those changes
-output group_table TO "group_table_file.csv" as CSV 
-output group_table TO "group_table_file.pdf" as PDF
-output group_table TO "chart1.jpeg" as JPEG 
+output sub_table TO "group_table_file.csv" as CSV 
+//output sub_table TO "group_table_file.pdf" as PDF
+// output group_table TO "chart1.jpeg" as JPEG 
+draw chart1 to "chart1.jpeg" as JPEG

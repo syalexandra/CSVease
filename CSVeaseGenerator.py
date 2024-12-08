@@ -5,12 +5,14 @@ from CSVeaseParser import CSVeaseParser
 class CSVeaseGenerator:
     def __init__(self, ast):
         self.ast = ast
-        self.python_code = "import pandas as pd \n"
+        # TODO: implement the to PDF functionality
+        self.python_code = "import pandas as pd \nimport matplotlib.pyplot as plt\n"
 
+    # TODO: export to temp python file and then actually execute it
     def run(self):
         res = self.generate(self.ast)
         print(self.python_code + res)
-        
+        exec(self.python_code + res)
 
     def generate(self, node):
         if node.type == 'ProgramStart':
@@ -65,11 +67,18 @@ class CSVeaseGenerator:
             file_type = self.generate(node.children[2])
             return f"{id}.{file_type}({file_name})"
         
+        elif node.type == "Draw":
+            id = self.generate(node.children[0])
+            file_name = self.generate(node.children[1])
+            file_type = self.generate(node.children[2])
+            return f"""plt.savefig({file_name}, format="{file_type}")"""
+        
         elif node.type == 'FileType':
             if node.value == 'CSV':
                 return "to_csv"
-    
-            ## note: output a dataset to pdf / csv is difficult, change to excel instead
+            elif node.value == 'JPEG':
+                return "jpeg"
+            
             
         elif node.type == 'ChartType':
             if node.value == 'BARCHART':
@@ -90,4 +99,5 @@ if __name__ == "__main__":
     parser = CSVeaseParser(lexer.tokens)
     result = parser.parse()
     codegen = CSVeaseGenerator(result)
+
     codegen.run()
