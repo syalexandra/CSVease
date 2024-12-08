@@ -57,7 +57,7 @@ class CSVeaseGenerator:
             charttype = self.generate(node.children[1])
             xaxis = self.generate(node.children[2])
             yaxis = self.generate(node.children[3])
-            return f"{identifier}.plot.{charttype}(x={xaxis}, y={yaxis})"
+            return f"{identifier}.plot.{charttype}(x='{xaxis}', y='{yaxis}')"
         
         elif node.type == "Output":
             id = self.generate(node.children[0])
@@ -71,9 +71,9 @@ class CSVeaseGenerator:
     
             ## note: output a dataset to pdf / csv is difficult, change to excel instead
             
-            
-
-
+        elif node.type == 'ChartType':
+            if node.value == 'BARCHART':
+                return "bar"
 
 
 if __name__ == "__main__":

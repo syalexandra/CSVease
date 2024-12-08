@@ -96,13 +96,13 @@ class CSVeaseParser:
                                         for child in parse_node.children if child.type not in ["EQ"]])
         
         elif parse_node.type == 'ConvertStmt':
-            if len(parse_node.children) < 4:
+            if len(parse_node.children) < 7:
                 raise ParserError("Invalid CONVERT statement structure")
             return Node("Convert", children=[
-                Node("Identifier", parse_node.children[1].value),
-                Node("ChartType", parse_node.children[3].value),
-                Node("Identifier", parse_node.children[5].value),
-                Node("Identifier", parse_node.children[6].value),
+                self.parse_tree_to_ast(parse_node.children[1]),
+                self.parse_tree_to_ast(parse_node.children[3]),
+                self.parse_tree_to_ast(parse_node.children[5]),
+                self.parse_tree_to_ast(parse_node.children[6]),
             ])
             
         elif parse_node.type == 'LoadStmt':
@@ -167,8 +167,17 @@ class CSVeaseParser:
                 raise ParserError("FileType node has no children")
             # The first child will be CSV, JPEG, or PDF
             return Node("FileType", parse_node.children[0].type)
+        
+        elif parse_node.type == "ChartType":
+            if not parse_node.children:
+                raise ParserError("ChartType node has no children")
+            # The first child will be CSV, JPEG, or PDF
+            return Node("ChartType", parse_node.children[0].type)
+        
         else:
             raise ParserError(f"Unknown node type: {parse_node.type}")
+        
+        
     def parse(self):
         root = Node('S')
         self.stack = [root, Node('$')]
