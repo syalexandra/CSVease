@@ -1,4 +1,4 @@
-table1 = load "csv/class_roster.csv"
+table1 = load "class_roster.csv"
 
 // output rows and columns
 
@@ -9,8 +9,9 @@ show columns table1
 
 sub_table = get (NAME, AGE, YEAR, SCORE) from table1
 
-
 // chart1 = convert group_table to barChart with YEAR SCORE
 
 // creates a new csv file called group_table.csv with those changes
 output sub_table TO "group_table_file.csv" as CSV 
+output sub_table TO "group_table_file.pdf" as PDF
+// output group_table TO "chart1.jpeg" as JPEG 

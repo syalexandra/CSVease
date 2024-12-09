@@ -1,0 +1,22 @@
+// Load the weather dataset
+weather = load "input/csv/weather_data.csv"
+
+// Show the structure of our data
+show columns weather
+show rows weather
+
+// Get temperature data by month
+temp_data = get (MONTH, AVG_TEMP, MAX_TEMP, MIN_TEMP) from weather
+
+// Get precipitation data
+rain_data = get (MONTH, RAINFALL, HUMIDITY) from weather
+
+// Create visualizations
+temp_chart = convert temp_data to BARCHART with MONTH AVG_TEMP
+rain_chart = convert rain_data to BARCHART with MONTH RAINFALL
+
+// Output results in different formats
+output temp_data TO "temperature_analysis.csv" as CSV
+output temp_data TO "temperature_report.pdf" as PDF
+output temp_chart TO "temperature_viz.jpeg" as JPEG
+output rain_chart TO "rainfall_viz.jpeg" as JPEG
