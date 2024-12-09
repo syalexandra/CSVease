@@ -242,13 +242,13 @@ class CSVeaseParser:
             ret_list.append(Node(p))
         return ret_list
 
-def format_ast(node, level=0):
-    if not node:
-        return ""
-    result = "  " * level + str(node) + "\n"
-    for child in node.children:
-        result += format_ast(child, level + 1)
-    return result
+    def format_ast(self,node, level=0):
+        if not node:
+            return ""
+        result = "  " * level + str(node) + "\n"
+        for child in node.children:
+            result += self.format_ast(child, level + 1)
+        return result
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
