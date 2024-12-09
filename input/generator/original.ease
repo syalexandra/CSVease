@@ -1,4 +1,4 @@
-table1 = load "class_roster.csv"
+table1 = load "csv/class_roster.csv"
 
 // output rows and columns
 

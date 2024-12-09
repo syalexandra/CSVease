@@ -12,6 +12,7 @@ class CSVeaseParser:
         self.stack = []
         self.buffer = []
         self.grammar = ParserGrammar()
+        self.errors = []
 
     def remove_white_space(self):
         self.tokens = [t for t in self.tokens if t[0] != "WHITESPACE"]
@@ -232,7 +233,7 @@ class CSVeaseParser:
                     self.buffer = self.buffer[:-1]
                     
         except Exception as e:
-            print(e)
+            raise(e)
     
     def parse_non_terminal(self, production):
         if not production:
@@ -260,7 +261,7 @@ if __name__ == "__main__":
     lexer.resolve_tokens()
     parser = CSVeaseParser(lexer.tokens)
     result = parser.parse()
-    ast = format_ast(result)
+    ast = parser.format_ast(result)
     print(ast)
     
 

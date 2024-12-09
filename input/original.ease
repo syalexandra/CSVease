@@ -1,4 +1,4 @@
-table1 = load "csv/class_roster.csv"
+table1 = load "input/generator/csv/class_roster.csv"
 
 // output rows and columns
 
@@ -8,11 +8,12 @@ show columns table1
 // select function
 
 sub_table = get (NAME, AGE, YEAR, SCORE) from table1
+draw sub_table to "chart1.jpeg" as JPEG
 
 
 chart1 = convert sub_table to barChart with NAME SCORE
 
 // creates a new csv file called group_table.csv with those changes
-output sub_table TO "group_table_file.csv" as CSV 
-draw chart1 to "chart1.jpeg" as JPEG
-draw chart1 to "chart1.pdf" as PDF
+// output sub_table TO "group_table_file.csv" as CSV 
+// draw chart1 to "chart1.jpeg" as JPEG
+// draw chart1 to "chart1.pdf" as PDF

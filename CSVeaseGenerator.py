@@ -1,19 +1,27 @@
 import sys
 from CSVeaseLexer import CSVeaseLexer
 from CSVeaseParser import CSVeaseParser
-
+import os
 
 class CSVeaseGenerator:
-    def __init__(self, ast):
+    def __init__(self, ast, file):
         self.ast = ast
+        self.file = file
         # TODO: implement the to PDF functionality
         self.python_code = "import pandas as pd \nimport matplotlib.pyplot as plt\n"
 
     # TODO: export to temp python file and then actually execute it
     def run(self):
         res = self.generate(self.ast)
-        exec(self.python_code + res)        
-
+        try:
+            exec(self.python_code + res)       
+        except FileNotFoundError as e:
+            print(f"CSVeaseGenerator: Could not find '{e.filename}'")
+            print(os.getcwd())
+            exit()
+        except Exception as e:
+            print(f"CSVeaseGenerator: {e.args}")
+             
     def generate(self, node):
         if node.type == 'ProgramStart':
             return "\n".join([self.generate(n) for n in node.children])
@@ -85,7 +93,6 @@ class CSVeaseGenerator:
             if node.value == 'BARCHART':
                 return "bar"
 
-
 if __name__ == "__main__":
 
     if len(sys.argv) > 1:
@@ -94,11 +101,20 @@ if __name__ == "__main__":
         print("Error: missing input file")
         exit()
         
-    # file = "input/test_weather_analysis.ease"
     lexer = CSVeaseLexer(file)
     lexer.resolve_tokens()
-    parser = CSVeaseParser(lexer.tokens)
-    result = parser.parse()
-    codegen = CSVeaseGenerator(result)
-
-    codegen.run()
+    if lexer.errors.error_count > 0:
+        lexer.errors.printErrors()
+        exit()
+    try:
+        parser = CSVeaseParser(lexer.tokens)
+        result = parser.parse()
+    except Exception as e:
+        print(f"CSVeaseParser: {e}")
+        exit()
+    
+    try:    
+        codegen = CSVeaseGenerator(result, file)
+        codegen.run()
+    except Exception as e:
+        pass
