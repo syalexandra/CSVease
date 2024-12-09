@@ -78,6 +78,8 @@ class CSVeaseGenerator:
                 return "to_csv"
             elif node.value == 'JPEG':
                 return "jpeg"
+            elif node.value == 'PDF':
+                return "pdf"
             
             
         elif node.type == 'ChartType':
