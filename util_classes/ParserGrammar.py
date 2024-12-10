@@ -8,7 +8,7 @@ class ParserGrammar:
             'IDENTIFIER', 'SHOW', 'GET', 'LOAD', 'INTO', 'FROM', 'TO', 'OUTPUT',
             'ROWS', 'COLUMNS', 'LPAREN', 'COMMA', 'RPAREN', 'LPAR', 'RPAR',
             'OUTPUT', 'CSV', 'JPEG', 'PDF', 'EQ', 'PLUS', 'AS', 'STRING',
-            'IN', 'AVG', 'GROUP_BY', 'CONVERT', 'BARCHART'
+            'IN', 'AVG', 'GROUP_BY', 'CONVERT', 'BARCHART','WITH','DRAW'
         ]
     
     def _init_parse_table(self):
@@ -17,6 +17,7 @@ class ParserGrammar:
             ('S', 'GET'): ['StmtList'],
             ('S', 'LOAD'): ['StmtList'],
             ('S', 'OUTPUT'): ['StmtList'],
+            ('S', 'DRAW'): ['StmtList'],
             ('S', 'SHOW'): ['StmtList'],
             ('S', 'CONVERT'): ['StmtList'],
 
@@ -24,6 +25,7 @@ class ParserGrammar:
             ('StmtList', 'GET'): ['BaseStmt', 'StmtListTail'],
             ('StmtList', 'LOAD'): ['BaseStmt', 'StmtListTail'],
             ('StmtList', 'OUTPUT'): ['BaseStmt', 'StmtListTail'],
+            ('StmtList', 'DRAW'): ['BaseStmt', 'StmtListTail'],
             ('StmtList', 'SHOW'): ['BaseStmt', 'StmtListTail'],
             ('StmtList', 'CONVERT'): ['BaseStmt', 'StmtListTail'],
 
@@ -32,6 +34,7 @@ class ParserGrammar:
             ('StmtListTail', 'LOAD'): ['BaseStmt', 'StmtListTail'],
             ('StmtListTail', 'OUTPUT'): ['BaseStmt', 'StmtListTail'],
             ('StmtListTail', 'SHOW'): ['BaseStmt', 'StmtListTail'],
+            ('StmtListTail', 'DRAW'): ['BaseStmt', 'StmtListTail'],
             ('StmtListTail', '$'): [],  
             
             ('BaseStmt', 'IDENTIFIER'): ['AssignStmt'],
@@ -40,9 +43,10 @@ class ParserGrammar:
             ('BaseStmt', 'LOAD'): ['LoadStmt'],
             ('BaseStmt', 'SHOW'): ['ShowStmt'],
             ('BaseStmt', 'OUTPUT'): ['OutputStmt'],
+            ('BaseStmt', 'DRAW'): ['DrawStmt'],
             
             ('AssignStmt', 'IDENTIFIER'): ['IDENTIFIER', 'EQ', 'BaseStmt'],
-            ('ConvertStmt', 'CONVERT'): ['CONVERT', 'IDENTIFIER', 'TO', 'ChartType'],
+            ('ConvertStmt', 'CONVERT'): ['CONVERT', 'IDENTIFIER', 'TO', 'ChartType','WITH','IDENTIFIER','IDENTIFIER'],
             ('GetStmt', 'GET'): ['GET', 'GetTarget', 'FROM', 'IDENTIFIER'],
             
             ('GetTarget', 'LPAREN'): ['LPAREN','ColumnList', 'RPAREN'],
@@ -54,6 +58,7 @@ class ParserGrammar:
             ('LoadStmt', 'LOAD'): ['LOAD', 'STRING'],
             
             ('OutputStmt', 'OUTPUT'): ['OUTPUT', 'IDENTIFIER', 'TO', 'STRING', 'AS', 'FileType'],
+            ('DrawStmt', 'DRAW'): ['DRAW', 'IDENTIFIER', 'TO', 'STRING', 'AS', 'FileType'],
             ('ShowStmt', 'SHOW'): ['SHOW', 'ShowOptions', 'IDENTIFIER'],
             ('ShowOptions', 'ROWS'): ['ROWS'],
             ('ShowOptions', 'COLUMNS'): ['COLUMNS'],

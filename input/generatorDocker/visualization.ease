@@ -1,0 +1,14 @@
+
+// Test data visualization features
+sales_data = load "csv/sales_2023.csv"
+
+// Create different views of the data
+monthly_sales = get (MONTH, REVENUE) from sales_data
+product_sales = get (PRODUCT, UNITS_SOLD) from sales_data
+
+// Create a bar chart
+sales_chart = convert monthly_sales to BARCHART with MONTH REVENUE
+
+// Output in different formats
+output monthly_sales TO "monthly_report.csv" as CSV
+draw sales_chart to "chart1.jpeg" as JPEG

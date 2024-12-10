@@ -12,6 +12,7 @@ class CSVeaseParser:
         self.stack = []
         self.buffer = []
         self.grammar = ParserGrammar()
+        self.errors = []
 
     def remove_white_space(self):
         self.tokens = [t for t in self.tokens if t[0] != "WHITESPACE"]
@@ -96,11 +97,13 @@ class CSVeaseParser:
                                         for child in parse_node.children if child.type not in ["EQ"]])
         
         elif parse_node.type == 'ConvertStmt':
-            if len(parse_node.children) < 4:
+            if len(parse_node.children) < 7:
                 raise ParserError("Invalid CONVERT statement structure")
             return Node("Convert", children=[
-                Node("Identifier", parse_node.children[1].value),
-                Node("ChartType", parse_node.children[3].type)
+                self.parse_tree_to_ast(parse_node.children[1]),
+                self.parse_tree_to_ast(parse_node.children[3]),
+                self.parse_tree_to_ast(parse_node.children[5]),
+                self.parse_tree_to_ast(parse_node.children[6]),
             ])
             
         elif parse_node.type == 'LoadStmt':
@@ -116,7 +119,7 @@ class CSVeaseParser:
             from_identifier = parse_node.children[-1] 
             return Node("Get", children=[
                 columns, 
-                Node("From", from_identifier.value)
+                Node("Identifier", from_identifier.value)
             ])
 
         elif parse_node.type == "GetTarget":
@@ -127,7 +130,6 @@ class CSVeaseParser:
             if len(parse_node.children) < 3:
                 raise ParserError("ShowStmt has no children")
             show_type = parse_node.children[1].children[0].type
-            print(show_type)
             identifier = parse_node.children[2].value
             return Node("Show", children=[
                 Node("ShowType", show_type), 
@@ -160,14 +162,34 @@ class CSVeaseParser:
                 self.parse_tree_to_ast(parse_node.children[3]),  # STRING
                 self.parse_tree_to_ast(parse_node.children[5])   # FileType
             ])
+        
+        elif parse_node.type == 'DrawStmt':
+            if len(parse_node.children) < 6:
+                raise ParserError("Invalid DRAW statement structure")
+            if parse_node.children[3].type != "STRING":
+                raise ParserError("DRAW statement requires a string literal for file path")
+            return Node("Draw", children=[
+                self.parse_tree_to_ast(parse_node.children[1]),  # IDENTIFIER
+                self.parse_tree_to_ast(parse_node.children[3]),  # STRING
+                self.parse_tree_to_ast(parse_node.children[5])   # FileType
+            ])
             
         elif parse_node.type == "FileType":
             if not parse_node.children:
                 raise ParserError("FileType node has no children")
             # The first child will be CSV, JPEG, or PDF
             return Node("FileType", parse_node.children[0].type)
+        
+        elif parse_node.type == "ChartType":
+            if not parse_node.children:
+                raise ParserError("ChartType node has no children")
+            # The first child will be CSV, JPEG, or PDF
+            return Node("ChartType", parse_node.children[0].type)
+        
         else:
             raise ParserError(f"Unknown node type: {parse_node.type}")
+        
+        
     def parse(self):
         root = Node('S')
         self.stack = [root, Node('$')]
@@ -211,7 +233,7 @@ class CSVeaseParser:
                     self.buffer = self.buffer[:-1]
                     
         except Exception as e:
-            print(e)
+            raise(e)
     
     def parse_non_terminal(self, production):
         if not production:
@@ -221,13 +243,13 @@ class CSVeaseParser:
             ret_list.append(Node(p))
         return ret_list
 
-def format_ast(node, level=0):
-    if not node:
-        return ""
-    result = "  " * level + str(node) + "\n"
-    for child in node.children:
-        result += format_ast(child, level + 1)
-    return result
+    def format_ast(self,node, level=0):
+        if not node:
+            return ""
+        result = "  " * level + str(node) + "\n"
+        for child in node.children:
+            result += self.format_ast(child, level + 1)
+        return result
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -239,7 +261,7 @@ if __name__ == "__main__":
     lexer.resolve_tokens()
     parser = CSVeaseParser(lexer.tokens)
     result = parser.parse()
-    ast = format_ast(result)
+    ast = parser.format_ast(result)
     print(ast)
     
 

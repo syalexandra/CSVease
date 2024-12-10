@@ -1,0 +1,12 @@
+// Test basic data loading and viewing
+students = load "input/generator/csv/student_grades.csv"
+show columns students
+show rows students
+
+// Test multiple GET operations
+math_scores = get (NAME, MATH_SCORE) from students
+science_scores = get (NAME, SCIENCE_SCORE) from students
+
+// Test multiple outputs
+output math_scores TO "math_results.csv" as CSV
+output science_scores TO "science_results.csv" as CSV

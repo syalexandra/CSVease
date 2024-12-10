@@ -24,7 +24,7 @@ class Line:
           '+': 'PLUS',
         }
         
-        self.KEYWORDS = ['SHOW','FROM', 'LOAD', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG','AVG','BARCHART']
+        self.KEYWORDS = ['SHOW','FROM', 'LOAD', 'INTO', 'CONVERT', 'ROWS', 'COLUMNS', 'GET', 'IN', 'TO', 'OUTPUT', 'AS', 'GROUP_BY', 'PDF', 'CSV', 'JPEG','AVG','BARCHART','WITH','DRAW']
         
         self.MODIFIERS = {
             ',': 'COMMA',
@@ -67,7 +67,8 @@ class Line:
 
             num_str += self.current_char
             self.advance()
-
+            if (self.current_char == None): 
+                break
         
         return ('INTEGER', num_str)
     
@@ -248,6 +249,7 @@ if __name__ == '__main__':
     lexer = CSVeaseLexer(file)
     lexer.resolve_tokens()
     if lexer.errors.error_count > 0:
+        print("Coming from here")
         lexer.errors.printErrors()
     else:
         lexer.print_tokens()

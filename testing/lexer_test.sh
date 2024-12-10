@@ -2,7 +2,7 @@
 
 run_lexer() {
     echo "Available tests:"
-    cd input/
+    cd input/base
     # List all files and number them
     files=($(ls *.ease 2>/dev/null))
     if [ ${#files[@]} -eq 0 ]; then
@@ -36,10 +36,12 @@ run_lexer() {
         echo "Invalid selection. Please try again."
         return  # Fixed typo 'returnå'
     fi
-    
-    selected_file="${files[$file_index]}"
+        
+    cd ../../
+    selected_file="input/base/${files[$file_index]}"
     # Call the Python lexer with the selected file
-    python3 ../CSVeaseLexer.py "$selected_file"
+
+    python3 CSVeaseLexer.py "$selected_file"
     echo
 
     # Ask if the user wants to run it again

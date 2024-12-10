@@ -52,11 +52,6 @@ run_test() {
         echo "--------------------------"
     fi
 
-    if [ "${files[$file_index]}" = "pipeline.sh" ]; then
-        echo "--------------------------"
-        echo "TESTING PIPELINE"
-        echo "--------------------------"
-    fi
 
     selected_test="testing/${files[$file_index]}"
 
