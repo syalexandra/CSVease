@@ -1,5 +1,5 @@
 // Test chaining multiple operations
-raw_data = load "input/generator/csv/employee.csv"
+raw_data = load "csv/employee.csv"
 
 // Create a subset of the data
 dept_data = get (DEPARTMENT, SALARY, YEARS_EXPERIENCE) from raw_data

@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Create user's home directory structure
 RUN mkdir -p /root/ && \
-    mv /app/input/generator/* /root/ && \
+    mv /app/input/generatorDocker/* /root/ && \
     rm -rf /app/input
 
 # Set up the csvease command
@@ -22,10 +22,9 @@ RUN echo 'shopt -s expand_aliases' >> /root/.bashrc
 
 SHELL ["/bin/bash", "-c"]
 
-RUN chmod +x test.sh
-
 RUN echo 'export PS1="\[\033[1;35m\]csvease>\[\033[0m\] "' >> /root/.bashrc
-
+RUN apt-get update
+RUN apt-get install vim -y
 WORKDIR /root
 
 ENTRYPOINT ["/bin/bash", "-l"]

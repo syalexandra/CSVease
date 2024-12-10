@@ -1,6 +1,6 @@
 
 // Test data visualization features
-sales_data = load "input/generator/csv/sales_2023.csv"
+sales_data = load "csv/sales_2023.csv"
 
 // Create different views of the data
 monthly_sales = get (MONTH, REVENUE) from sales_data

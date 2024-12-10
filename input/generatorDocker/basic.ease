@@ -1,5 +1,5 @@
 // Test basic data loading and viewing
-students = load "input/generator/csv/student_grades.csv"
+students = load "csv/student_grades.csv"
 show columns students
 show rows students
 

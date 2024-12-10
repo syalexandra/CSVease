@@ -1,4 +1,4 @@
-table1 = load "input/generator/csv/class_roster.csv"
+table1 = load "input/generator/csv/does_not_exist.csv"
 
 // output rows and columns
 

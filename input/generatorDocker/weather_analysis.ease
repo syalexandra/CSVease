@@ -1,5 +1,5 @@
 // Load the weather dataset
-weather = load "input/generator/csv/weather_data.csv"
+weather = load "csv/weather_data.csv"
 
 // Show the structure of our data
 show columns weather

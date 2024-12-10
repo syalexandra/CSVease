@@ -1,0 +1,9 @@
+EMPLOYEE_ID,DEPARTMENT,SALARY,YEARS_EXPERIENCE,POSITION
+E001,Engineering,85000,5,Software Engineer
+E002,Marketing,65000,3,Marketing Specialist
+E003,Engineering,95000,7,Senior Developer
+E004,Sales,70000,4,Sales Representative
+E005,Marketing,75000,6,Marketing Manager
+E006,Engineering,90000,6,DevOps Engineer
+E007,Sales,80000,5,Sales Manager
+E008,Marketing,62000,2,Marketing Associate

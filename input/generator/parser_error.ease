@@ -7,7 +7,7 @@ show columns table1
 
 // select function
 
-sub_table = get (NAME, AGE, YEAR, SCORE) from table1
+sub_table = get (NAME, AGE, YEAR, SCORE) table1
 draw sub_table to "chart1.jpeg" as JPEG
 
 

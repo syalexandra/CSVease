@@ -1,4 +1,4 @@
-table1 = load "input/generator/csv/class_roster.csv"
+table1 = load "csv/class_roster.csv"
 
 // output rows and columns
 

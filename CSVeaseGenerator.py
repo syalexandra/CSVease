@@ -1,7 +1,6 @@
 import sys
 from CSVeaseLexer import CSVeaseLexer
 from CSVeaseParser import CSVeaseParser
-import os
 
 class CSVeaseGenerator:
     def __init__(self, ast, file):
@@ -17,7 +16,6 @@ class CSVeaseGenerator:
             exec(self.python_code + res)       
         except FileNotFoundError as e:
             print(f"CSVeaseGenerator: Could not find '{e.filename}'")
-            print(os.getcwd())
             exit()
         except Exception as e:
             print(f"CSVeaseGenerator: {e.args}")
@@ -98,7 +96,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         file = sys.argv[1]  
     else:
-        print("Error: missing input file")
+        print("CSVeaseGenerator ERROR: missing input file")
         exit()
         
     lexer = CSVeaseLexer(file)
