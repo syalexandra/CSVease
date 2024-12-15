@@ -109,8 +109,10 @@ class CSVeaseParser:
         elif parse_node.type == 'LoadStmt':
             if len(parse_node.children) < 2:
                 raise ParserError("LoadStmt has no children")
-            return Node("Load", children=[self.parse_tree_to_ast(child) 
-                                        for child in parse_node.children if child.type not in ["LOAD"]])
+            load_type = parse_node.children[1].children[0]
+            return Node("Load", children=[
+                self.parse_tree_to_ast(load_type)
+            ])
 
         elif parse_node.type == "GetStmt":
             if len(parse_node.children) < 4:
