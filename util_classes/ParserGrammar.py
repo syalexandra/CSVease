@@ -44,11 +44,14 @@ class ParserGrammar:
             ('BaseStmt', 'SHOW'): ['ShowStmt'],
             ('BaseStmt', 'OUTPUT'): ['OutputStmt'],
             ('BaseStmt', 'DRAW'): ['DrawStmt'],
-            ('BaseStmt', 'STRING'):['STRING'],
+            ('BaseStmt', 'STRING'):['StrStmt'],
             
             ('AssignStmt', 'IDENTIFIER'): ['IDENTIFIER', 'EQ', 'BaseStmt'],
             ('ConvertStmt', 'CONVERT'): ['CONVERT', 'IDENTIFIER', 'TO', 'ChartType','WITH','IDENTIFIER','IDENTIFIER'],
             ('GetStmt', 'GET'): ['GET', 'GetTarget', 'FROM', 'IDENTIFIER'],
+            ('StrStmt', 'STRING'):['STRING', 'StrStmtTail'],
+            ('StrStmtTail','$'):[],
+            ('StrStmtTail', 'PLUS'):['PLUS', 'STRING'],
             
             ('GetTarget', 'LPAREN'): ['LPAREN','ColumnList', 'RPAREN'],
             ('GetTarget', 'IDENTIFIER'): ['IDENTIFIER'],

@@ -137,6 +137,18 @@ class CSVeaseParser:
                 Node("ShowType", show_type), 
                 Node("Identifier", identifier)
             ])
+        
+        elif parse_node.type == 'StrStmt':
+            first_string = parse_node.children[0]
+            str_tail = parse_node.children[1].children
+            if len(str_tail) == 0:
+                return self.parse_tree_to_ast(first_string)
+            else:
+                return Node(str_tail[0].value, children=[
+                    self.parse_tree_to_ast(first_string),
+                    self.parse_tree_to_ast(str_tail[1])
+                ])
+
             
         elif parse_node.type == "ColumnList":
             columns = self.flatten_column_list(parse_node)

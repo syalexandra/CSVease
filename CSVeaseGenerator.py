@@ -12,6 +12,7 @@ class CSVeaseGenerator:
     # TODO: export to temp python file and then actually execute it
     def run(self):
         res = self.generate(self.ast)
+        print(res)
         try:
             exec(self.python_code + res)       
         except FileNotFoundError as e:
@@ -32,6 +33,9 @@ class CSVeaseGenerator:
 
         elif node.type == 'String':
             return f'"{node.value}"'
+        
+        elif node.type == '+':
+            return f"{self.generate(node.children[0])} + {self.generate(node.children[1])}"
 
         elif node.type == 'Show':
             showtype = node.children[0]
