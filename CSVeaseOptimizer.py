@@ -39,9 +39,16 @@ class ConstantFolding:
     
     def run(self):
         self.fold(self.ast)
+        return self.ast
 
     def fold(self, node):
-        return
+        if node.type == '+':
+            node.type = 'String'
+            node.value = node.children[0].value + node.children[1].value
+            return
+        for child in node.children:
+            self.fold(child)
+        
 """
 class CSVeaseOptimizer:
     def __init__(self, ast):
@@ -60,8 +67,10 @@ if __name__ == "__main__":
     lexer.resolve_tokens()
     parser = CSVeaseParser(lexer.tokens)
     ast = parser.parse()
-    cp = ConstantPropogation(ast)
-    ast = cp.run()
+    #cp = ConstantPropogation(ast)
+    #ast = cp.run()
+    cf = ConstantFolding(ast)
+    ast = cf.run()
     codegen = CSVeaseGenerator(ast, '')
     codegen.run()
 
