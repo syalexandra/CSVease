@@ -11,8 +11,8 @@ class CSVeaseGenerator:
     # TODO: export to temp python file and then actually execute it
     def run(self):
         res = self.generate(self.ast)
-        print(res)
         try:
+            print("generated python code: \n"+res)
             exec(self.python_code + res)       
         except FileNotFoundError as e:
             print(f"CSVeaseGenerator: Could not find '{e.filename}'")

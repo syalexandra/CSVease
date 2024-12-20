@@ -6,7 +6,7 @@ Demo Video: https://www.youtube.com/watch?v=L6ttwPFsqtk
 
 ## Algorithm Overview:
 
-We generate the python code by walking through the abstract syntax tree, we start from the root of the tree, generate code for each subtrees first, then apply the parent operator to combine the subtrees together. For example, the assignment statement will first evaluate the first child which is an identifier, then evaluate the second child which is a more complicated statement, then combine them together with equal (=) sign into the python code. 
+We generate the python code by walking through the abstract syntax tree, we start from the root of the tree, generate code for each subtrees first, then apply the parent operator to combine the subtrees together. For example, the assignment statement will first evaluate the first child which is an identifier, then evaluate the second child which is a more complicated statement, then combine them together with equal (=) sign into the python code. Before the final step of code generation, it will go through the optimization phase and simplify the lines of code needed for the final result.
 
 ## Error Propogation:
 
@@ -30,6 +30,15 @@ Example:
 1. User provides an incorrect path to their CSV file
 2. Invalid sequence of statements 
 
+
+### CSVeaseOptimizer
+We use four different optimization techniques to improve the performance of the code, constant folding, constant propopogation, dead code elimination and common sub expression elimination, we will output the generated python code before and after the optimization to show you how it simplies the original code.
+1. constant folding: it traverses the ast tree, check for any operand that could generate a constant value, in our case the string + string operand, then evaluate the expression and replace the node with the calculated value. 
+2. constant propogation: it traverses the ast, and use a constant variable dictionary to store the variables and their constant values, if it sees a variable is already stored in the constant dictionary, use its value to replace variable.
+3. dead code elimination: it traverse the ast tree reversely, and store the variables that are being used in the later code statement, if there is a variable that hasn't been used later after its definition, will simply remove the line of code that defines the variable. 
+4. common subexpression: it traverses the ast tree, for all the assignment statement, store the (expression, value) pair in a dictionary, if the code sees the same expression later, it will replaces the expression with a previous value. 
+
+
 ### Putting it all together:
 Since each phase handles errors differently. In order for us to be able to discern from which step an error is coming from. We implemented the following when you run input code. Here is the referenced code:
 
@@ -46,73 +55,58 @@ Since each phase handles errors differently. In order for us to be able to disce
         print(f"CSVeaseParser: {e}")
         exit()
     
-    try:    
-        codegen = CSVeaseGenerator(result, file)
+    try: 
+        print("before optimization: ", technique)
+        codegen = CSVeaseGenerator(ast)
         codegen.run()
     except Exception as e:
-        pass
+        print(e)
+    try: 
+        optimizer = CSVeaseOptimizer(ast)
+        print("after optimization: ", technique)
+        ast = optimizer.optimize(technique)
+        codegen = CSVeaseGenerator(ast)
+        codegen.run()
+    except Exception as e:
+        print(e)
 ```
 
 ## Sample Programs 
 
-We provided the following test programs in the `input/generator` which would work and execute with no errors. Note there are two input directories for the generator. If running locally, please use the input programs in `input/generator`, if using Docker, the `input/generatorDocker` will be copied into the home directory of the container. Instructions below for exactly how to run/test our coding language.
+We provided the following test programs in the `input/optimizer` which would work and execute with no errors. If running locally, please use the input programs in `input/optimizer`, if using Docker, the `input/generatorDocker` will be copied into the home directory of the container. Instructions below for exactly how to run/test our coding language.
 
-1. basic.ease
-- Load input/generator/csv/student_grades.csv
-- Print columns 
-- Print rows 
-- Get NAME, MATH_SCORE from csv 
-- Get NAME, SCIENCE_SCORE from csv 
-- Output to seperate files
+1. ConstantFolding.ease
+tablename = "input" + "/generator/csv/class_roaster.csv"
 
-2. chained_operations.ease
-- Load input/generator/csv/employee.csv
-- Get DEPARTMENT, SALARY, YEARS_EXPERIENCE from csv
-- Print columns 
-- Print rows 
-- Create bar chart with DEPARTMENT and SALARY and writes to jpeg 
-- Writes csv
+after the optimization, it will modify the code to :
+tablename = "input/generator/csv/class_roaster.csv"
 
-3. original.ease
-- Load input/generator/csv/class_roster.csv
-- Print columns 
-- Print rows 
-- Get NAME, AGE, YEAR from csv 
-- Output csv 
-- Output pdf 
-- Output jpeg
+2. ConstandPropogation.ease
+tablename = "input/generator/csv/class_roster.csv"
+table1 = load tablename
 
-4. visualization.ease
-- Load input/generator/csv/sales_2023.csv
-- Get MONTH, REVENUE from csv 
-- Get PRODUCT, UNITS_SOLD from csv 
-- Create bar chart with MONTH and REVENUE and writes to jpeg 
-- Output csv 
+after the optimization, it will modify the code to :
+table1 = load "input/generator/csv/class_roster.csv"
 
-5. weather_analysis.ease
-- Load input/generator/csv/weather_data.csv
-- Print columns 
-- Print rows 
-- Get MONTH, AVG_TEMP, MAX_TEMP, MIN_TEMP
-- Get MONTH, RAINFALL, HUMIDITY
-- Create bar chart with MONTH, AVG_TEMP, MAX_TEMP, MIN_TEMP and writes to jpeg 
-- Create bar chart with  MONTH, RAINFALL, HUMIDITY and writes to jpeg 
-- Output csv 
+3. CommonSubExpressionElimination.ease
+x = "input" + "/generator/csv/class_roaster.csv"
+y = "input" + "/generator/csv/class_roaster.csv"
 
-We provided the following test programs in the `input/generator` which would output errors.
+after the optimization, it will modify the code to :
+x = "input" + "/generator/csv/class_roaster.csv"
+y = x
 
-1. lexer_error.ease -- `CSVeaseLexer: Line 1 -- Unexpected character: '~'.`
-2. parser_error.ease --  `CSVeaseParser: Token mismatch: expected FROM, got IDENTIFIER`
-3. generator_error.ease -- `CSVeaseGenerator: Could not find 'input/generator/csv/does_not_exist.csv'`
+4. DeadCodeElimination.ease
+x = "input/generator/csv/class_roster.csv"
+y = "input"
+z = load x
+output z TO "group_table_file.csv" as CSV
 
-We also provided data from which the input programs will often reference in their execution in `input/generator/csv`
+after the optimization, it will modify the code to:
+x = "input/generator/csv/class_roster.csv"
+z = load x
+output z TO "group_table_file.csv" as CSV
 
-1. class_roster.csv        
-2. science_results.csv
-3. employee.csv            
-4. student_grades.csv
-5. sales_2023.csv          
-6. weather_data.csv
 
 ## How to run?
 
@@ -135,7 +129,7 @@ Note VIM is installed in the Docker image, so you can make edits to the input fi
 We have provided a shell script which you can run by doing the following
 
 1. `chmod +x csvease`
-2. `./csvease input/generator/<input_file>`
+2. `./csvease input/optimizer/<input_file>`
 
 **Note that when running locally, your machine must have pandas and matplotlib Python libraries already installed.**
 

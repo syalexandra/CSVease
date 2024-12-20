@@ -1,0 +1,2 @@
+tablename = "input/generator/csv/class_roster.csv"
+table1 = load tablename

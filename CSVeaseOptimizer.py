@@ -94,7 +94,7 @@ class DeadCodeElimination:
                self.mark_used_variable(child)
 
 
-class CommonSubExpElimination:
+class CommonSubExpressionElimination:
     def __init__(self, ast):
         self.ast = ast
         self.sub_expressions = {}
@@ -140,8 +140,8 @@ class CSVeaseOptimizer:
         self.ast = ast
 
     def optimize(self, technique):
-        if technique == 'CommonSubExpElimination':
-            cse = CommonSubExpElimination(self.ast)
+        if technique == 'CommonSubExpressionElimination':
+            cse = CommonSubExpressionElimination(self.ast)
             return cse.run()
         elif technique == 'ConstantFolding':
             cf = ConstantFolding(ast)
@@ -162,7 +162,8 @@ class CSVeaseOptimizer:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        file = sys.argv[1]  
+        file = sys.argv[1]
+        technique = sys.argv[2]  
     else:
         print("Error: missing input file")
         exit()  # Correctly exit with parentheses
@@ -170,20 +171,21 @@ if __name__ == "__main__":
     lexer.resolve_tokens()
     parser = CSVeaseParser(lexer.tokens)
     ast = parser.parse()
-    """
-    cse = CommonSubExpElimination(ast)
-    ast = cse.run()
-    cf = ConstantFolding(ast)
-    ast = cf.run()
-    cp = ConstantPropogation(ast)
-    ast = cp.run()
-    dce = DeadCodeElimination(ast)
-    ast = dce.run()
-    """
-    optimizer = CSVeaseOptimizer(ast)
-    ast = optimizer.optimize('CommonSubExpElimination')
-    codegen = CSVeaseGenerator(ast)
-    codegen.run()
+    try: 
+        print("before optimization: ", technique)
+        codegen = CSVeaseGenerator(ast)
+        codegen.run()
+    except Exception as e:
+        print(e)
+    try: 
+        optimizer = CSVeaseOptimizer(ast)
+        print("after optimization: ", technique)
+        ast = optimizer.optimize(technique)
+        codegen = CSVeaseGenerator(ast)
+        codegen.run()
+    except Exception as e:
+        print(e)
+    
     
 
 
