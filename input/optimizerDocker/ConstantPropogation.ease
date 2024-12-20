@@ -1,0 +1,2 @@
+tablename = "csv/class_roster.csv"
+table1 = load tablename

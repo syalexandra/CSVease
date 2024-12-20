@@ -1,0 +1,4 @@
+x = "csv/class_roster.csv"
+y = "input"
+z = load x
+output z TO "group_table_file.csv" as CSV
