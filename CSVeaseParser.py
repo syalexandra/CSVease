@@ -88,7 +88,23 @@ class CSVeaseParser:
         elif parse_node.type == "BaseStmt":
             if not parse_node.children:
                 raise ParserError("BaseStmt has no children")
-            return self.parse_tree_to_ast(parse_node.children[0])
+            elif len(parse_node.children) == 1:
+                return self.parse_tree_to_ast(parse_node.children[0])
+            elif len(parse_node.children) == 2:
+                first_child = parse_node.children[0]
+                second_child = parse_node.children[1]
+                if second_child.type == 'StrStmt':
+                    if len(second_child.children) == 0:
+                        return self.parse_tree_to_ast(first_child)
+                    else:
+                        return Node(second_child.children[0].value, children = [
+                            self.parse_tree_to_ast(first_child),
+                            self.parse_tree_to_ast(second_child.children[1])
+                        ])
+                else:
+                    raise ParserError("BaseStmt is wrong")
+            else:
+                raise ParserError("BaseStmt is wrong")
 
         elif parse_node.type == 'AssignStmt':
             if len(parse_node.children) < 3:
@@ -109,8 +125,10 @@ class CSVeaseParser:
         elif parse_node.type == 'LoadStmt':
             if len(parse_node.children) < 2:
                 raise ParserError("LoadStmt has no children")
-            return Node("Load", children=[self.parse_tree_to_ast(child) 
-                                        for child in parse_node.children if child.type not in ["LOAD"]])
+            load_type = parse_node.children[1].children[0]
+            return Node("Load", children=[
+                self.parse_tree_to_ast(load_type)
+            ])
 
         elif parse_node.type == "GetStmt":
             if len(parse_node.children) < 4:
@@ -135,6 +153,8 @@ class CSVeaseParser:
                 Node("ShowType", show_type), 
                 Node("Identifier", identifier)
             ])
+
+
             
         elif parse_node.type == "ColumnList":
             columns = self.flatten_column_list(parse_node)

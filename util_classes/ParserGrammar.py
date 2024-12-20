@@ -44,10 +44,15 @@ class ParserGrammar:
             ('BaseStmt', 'SHOW'): ['ShowStmt'],
             ('BaseStmt', 'OUTPUT'): ['OutputStmt'],
             ('BaseStmt', 'DRAW'): ['DrawStmt'],
+            ('BaseStmt', 'STRING'):['STRING', 'StrStmt'],
             
             ('AssignStmt', 'IDENTIFIER'): ['IDENTIFIER', 'EQ', 'BaseStmt'],
             ('ConvertStmt', 'CONVERT'): ['CONVERT', 'IDENTIFIER', 'TO', 'ChartType','WITH','IDENTIFIER','IDENTIFIER'],
             ('GetStmt', 'GET'): ['GET', 'GetTarget', 'FROM', 'IDENTIFIER'],
+            ('StrStmt', 'PLUS'):['PLUS', 'STRING'],
+            ('StrStmt', 'IDENTIFIER'):[],
+            ('StrStmt', '$'):[],
+
             
             ('GetTarget', 'LPAREN'): ['LPAREN','ColumnList', 'RPAREN'],
             ('GetTarget', 'IDENTIFIER'): ['IDENTIFIER'],
@@ -55,7 +60,9 @@ class ParserGrammar:
             ('ColumnListTail', 'COMMA'): ['COMMA', 'IDENTIFIER', 'ColumnListTail'],
             ('ColumnListTail', 'RPAREN'): [], 
             
-            ('LoadStmt', 'LOAD'): ['LOAD', 'STRING'],
+            ('LoadStmt', 'LOAD'): ['LOAD', 'LoadOptions'],
+            ('LoadOptions', 'STRING'):['STRING'],
+            ('LoadOptions', 'IDENTIFIER'):['IDENTIFIER'],
             
             ('OutputStmt', 'OUTPUT'): ['OUTPUT', 'IDENTIFIER', 'TO', 'STRING', 'AS', 'FileType'],
             ('DrawStmt', 'DRAW'): ['DRAW', 'IDENTIFIER', 'TO', 'STRING', 'AS', 'FileType'],

@@ -1,0 +1,10 @@
+//tablename = "input/generator/csv/class_roster.csv"
+//table1 = load tablename
+//tablename = "input" + "/generator/csv/class_roaster.csv"
+//tablename1 = "input"
+//x = "input/generator/csv/class_roster.csv"
+//y = "input"
+//z = load x
+//output z TO "group_table_file.csv" as CSV
+x = "input" + "abc"
+y = "input" + "abc"

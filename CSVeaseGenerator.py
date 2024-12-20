@@ -3,9 +3,8 @@ from CSVeaseLexer import CSVeaseLexer
 from CSVeaseParser import CSVeaseParser
 
 class CSVeaseGenerator:
-    def __init__(self, ast, file):
+    def __init__(self, ast):
         self.ast = ast
-        self.file = file
         # TODO: implement the to PDF functionality
         self.python_code = "import pandas as pd \nimport matplotlib.pyplot as plt\n"
 
@@ -13,6 +12,7 @@ class CSVeaseGenerator:
     def run(self):
         res = self.generate(self.ast)
         try:
+            print("generated python code: \n"+res)
             exec(self.python_code + res)       
         except FileNotFoundError as e:
             print(f"CSVeaseGenerator: Could not find '{e.filename}'")
@@ -32,6 +32,9 @@ class CSVeaseGenerator:
 
         elif node.type == 'String':
             return f'"{node.value}"'
+        
+        elif node.type == '+':
+            return f"{self.generate(node.children[0])} + {self.generate(node.children[1])}"
 
         elif node.type == 'Show':
             showtype = node.children[0]
@@ -112,7 +115,7 @@ if __name__ == "__main__":
         exit()
     
     try:    
-        codegen = CSVeaseGenerator(result, file)
+        codegen = CSVeaseGenerator(result)
         codegen.run()
     except Exception as e:
         pass

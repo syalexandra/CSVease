@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": "input/original.ease"
+            "args": ["input/optimizer/DeadCodeElimination.ease","DeadCodeElimination"],
+            "justMyCode": true
         }
     ]
 }
