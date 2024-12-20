@@ -88,7 +88,23 @@ class CSVeaseParser:
         elif parse_node.type == "BaseStmt":
             if not parse_node.children:
                 raise ParserError("BaseStmt has no children")
-            return self.parse_tree_to_ast(parse_node.children[0])
+            elif len(parse_node.children) == 1:
+                return self.parse_tree_to_ast(parse_node.children[0])
+            elif len(parse_node.children) == 2:
+                first_child = parse_node.children[0]
+                second_child = parse_node.children[1]
+                if second_child.type == 'StrStmt':
+                    if len(second_child.children) == 0:
+                        return self.parse_tree_to_ast(first_child)
+                    else:
+                        return Node(second_child.children[0].value, children = [
+                            self.parse_tree_to_ast(first_child),
+                            self.parse_tree_to_ast(second_child.children[1])
+                        ])
+                else:
+                    raise ParserError("BaseStmt is wrong")
+            else:
+                raise ParserError("BaseStmt is wrong")
 
         elif parse_node.type == 'AssignStmt':
             if len(parse_node.children) < 3:
@@ -137,17 +153,7 @@ class CSVeaseParser:
                 Node("ShowType", show_type), 
                 Node("Identifier", identifier)
             ])
-        
-        elif parse_node.type == 'StrStmt':
-            first_string = parse_node.children[0]
-            str_tail = parse_node.children[1].children
-            if len(str_tail) == 0:
-                return self.parse_tree_to_ast(first_string)
-            else:
-                return Node(str_tail[0].value, children=[
-                    self.parse_tree_to_ast(first_string),
-                    self.parse_tree_to_ast(str_tail[1])
-                ])
+
 
             
         elif parse_node.type == "ColumnList":

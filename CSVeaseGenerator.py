@@ -3,9 +3,8 @@ from CSVeaseLexer import CSVeaseLexer
 from CSVeaseParser import CSVeaseParser
 
 class CSVeaseGenerator:
-    def __init__(self, ast, file):
+    def __init__(self, ast):
         self.ast = ast
-        self.file = file
         # TODO: implement the to PDF functionality
         self.python_code = "import pandas as pd \nimport matplotlib.pyplot as plt\n"
 
@@ -116,7 +115,7 @@ if __name__ == "__main__":
         exit()
     
     try:    
-        codegen = CSVeaseGenerator(result, file)
+        codegen = CSVeaseGenerator(result)
         codegen.run()
     except Exception as e:
         pass

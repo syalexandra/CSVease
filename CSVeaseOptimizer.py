@@ -45,15 +45,118 @@ class ConstantFolding:
         if node.type == '+':
             node.type = 'String'
             node.value = node.children[0].value + node.children[1].value
+            node.children = []
             return
         for child in node.children:
             self.fold(child)
         
-"""
+
+class DeadCodeElimination:
+    def __init__(self, ast):
+        self.ast = ast
+        self.used_variable = set()
+
+    def run(self):
+        self.eliminate(self.ast)
+        return self.ast
+    
+    def eliminate(self, node):
+        if node.type == "ProgramStart":
+            live_children = []
+            for child in reversed(node.children):
+                if not self.eliminate(child):
+                    live_children.append(child)
+            node.children = list(reversed(live_children))
+            return False
+        
+        elif node.type == 'Assign':
+            id = node.children[0].value
+            if id in self.used_variable:
+                self.mark_used_variable(node.children[1])
+                return False
+            else:
+                return True
+
+        elif node.type == 'Identifier':
+            self.used_variable.add(node.value)
+            return False
+        
+        else:
+            for child in node.children:
+                self.eliminate(child)
+            return False
+        
+    def mark_used_variable(self, node):
+        if node.type == "Identifier":
+            self.used_variable.add(node.value)
+        elif node.children:
+            for child in node.children:
+               self.mark_used_variable(child)
+
+
+class CommonSubExpElimination:
+    def __init__(self, ast):
+        self.ast = ast
+        self.sub_expressions = {}
+
+    def run(self):
+        self.eliminate(self.ast)
+        return self.ast
+    
+    def serialize(self, node):
+        if not node.children:
+            return f"{node.type}:{node.value}"
+        return f"{node.type}({','.join(self.serialize(child) for child in node.children)})"
+
+    def eliminate(self, node):
+        if node.type == "ProgramStart":
+            live_children = []
+            for child in node.children:
+                if child.type == 'Assign':
+                    lhs = child.children[0]
+                    rhs = child.children[1]
+                    subtree_key = self.serialize(rhs)
+                    if subtree_key in self.sub_expressions:
+                        child.children = [lhs, self.sub_expressions[subtree_key]]
+                    else:
+                        self.sub_expressions[subtree_key] = lhs
+
+                    live_children.append(child)
+                else:
+                    live_children.append(child)
+            node.children = live_children
+            
+
+
+
+            
+
+
+        
+
+
 class CSVeaseOptimizer:
     def __init__(self, ast):
         self.ast = ast
-"""
+
+    def optimize(self, technique):
+        if technique == 'CommonSubExpElimination':
+            cse = CommonSubExpElimination(self.ast)
+            return cse.run()
+        elif technique == 'ConstantFolding':
+            cf = ConstantFolding(ast)
+            return cf.run()
+        elif technique == 'ConstantPropogation':
+            cp = ConstantPropogation(ast)
+            return cp.run()
+        elif technique == 'DeadCodeElimination':
+            dce = DeadCodeElimination(ast)
+            return dce.run()
+        else:
+            return self.ast
+        
+    
+
 
 
 
@@ -67,11 +170,21 @@ if __name__ == "__main__":
     lexer.resolve_tokens()
     parser = CSVeaseParser(lexer.tokens)
     ast = parser.parse()
-    #cp = ConstantPropogation(ast)
-    #ast = cp.run()
+    """
+    cse = CommonSubExpElimination(ast)
+    ast = cse.run()
     cf = ConstantFolding(ast)
     ast = cf.run()
-    codegen = CSVeaseGenerator(ast, '')
+    cp = ConstantPropogation(ast)
+    ast = cp.run()
+    dce = DeadCodeElimination(ast)
+    ast = dce.run()
+    """
+    optimizer = CSVeaseOptimizer(ast)
+    ast = optimizer.optimize('CommonSubExpElimination')
+    codegen = CSVeaseGenerator(ast)
     codegen.run()
+    
+
 
     
