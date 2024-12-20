@@ -126,15 +126,6 @@ class CommonSubExpressionElimination:
                     live_children.append(child)
             node.children = live_children
             
-
-
-
-            
-
-
-        
-
-
 class CSVeaseOptimizer:
     def __init__(self, ast):
         self.ast = ast
@@ -154,11 +145,6 @@ class CSVeaseOptimizer:
             return dce.run()
         else:
             return self.ast
-        
-    
-
-
-
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

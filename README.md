@@ -1,37 +1,9 @@
-# CSVeaseLexer, CSVeaseParser, and CSVeaseGenerator 
+# CSVeaseLexer, CSVeaseParser, CSVeaseGenerator, and CSVeaseOptimizer
 
 Developers: Phillip Le (pnl2111) and Yue Sun (ys3535)
+Optimizer Video: https://youtu.be/BR1Z66FFX_c
 
-Demo Video: https://www.youtube.com/watch?v=L6ttwPFsqtk
-
-## Algorithm Overview:
-
-We generate the python code by walking through the abstract syntax tree, we start from the root of the tree, generate code for each subtrees first, then apply the parent operator to combine the subtrees together. For example, the assignment statement will first evaluate the first child which is an identifier, then evaluate the second child which is a more complicated statement, then combine them together with equal (=) sign into the python code. Before the final step of code generation, it will go through the optimization phase and simplify the lines of code needed for the final result.
-
-## Error Propogation:
-
-### CSVeaseLexer
-We developed the CSVeaseLexer to parse the entire input and keep track of errors. At the end of processing the input file, the Lexer will have collected and logged all the line numbers of erros that have come up during this phase. These errors include:
-1. InvalidSequence 
-2. InvalidString 
-3. UnexpectedCharacter
-In the case where the lexer has detected any error, there will be no tokens generated.
-
-### CSVeaseParser
-Error handling in CSVeaseParse takes a different approach. The parser will halt execution when an error is encountered and raise a ParserError Exception with the indicated cause. Here are the errors that we detected (including but not limited to): 
-1. Invalid GET statement 
-2. Invalid LOAD statement 
-3. Missing Identifier 
-
-### CSVeaseGenerator
-Errors coming from this phase we predict are coming from the actual execution of the program itself. Since our coding language generated Python, any errors that you can see coming from the generator are Python compilation errors that we capture and cast as errors coming from compiling csvease code (technically it is!)
-
-Example:
-1. User provides an incorrect path to their CSV file
-2. Invalid sequence of statements 
-
-
-### CSVeaseOptimizer
+### CSVeaseOptimizer Extra Credit
 We use four different optimization techniques to improve the performance of the code, constant folding, constant propopogation, dead code elimination and common sub expression elimination, we will output the generated python code before and after the optimization to show you how it simplies the original code.
 1. constant folding: it traverses the ast tree, check for any operand that could generate a constant value, in our case the string + string operand, then evaluate the expression and replace the node with the calculated value. 
 2. constant propogation: it traverses the ast, and use a constant variable dictionary to store the variables and their constant values, if it sees a variable is already stored in the constant dictionary, use its value to replace variable.
@@ -107,10 +79,14 @@ x = "input/generator/csv/class_roster.csv"
 z = load x
 output z TO "group_table_file.csv" as CSV
 
-
 ## How to run?
 
-Now that we have the code generator, `CSVeaseGenerator`, we can see the full pipeline and run input programs like any other coding language. 
+The goal and output of the optimizer is to demonstrate how we implemented code optimization in CSVease, when you run the optimizer it will print the before optimization code and the optimized code and silently execute the optimized code. We provided a testing script to test the different optimization techniques. If testing locally:
+
+1. Run `chmod +x optimizer.sh`
+2. Run `./optimizer.sh`
+
+If running via Docker, follow the instructions below to create and run container. Then, run: `test`.
 
 ### Using Docker
 
@@ -119,32 +95,41 @@ For the best experience we reccomend using Docker to test CSVease. You can build
 1. `docker build -t csvease .`
 2. `docker run -it csvease`
 
-During the build process, the input/generatorDocker directory will be copied into the Docker container's home directory. From which you can simply run:
-`csvease <input_file_name>.ease`
+During the build process, the input/optimizerDocker directory will be copied into the Docker container's home directory. From which you can run:
+`csvease <input_file_name>.ease <optimization-technique`
+
+As mentioned above, we provided a shell script that can be executed in Docker by simply running: `test`
 
 Note VIM is installed in the Docker image, so you can make edits to the input files directly in the image. To view the contents of an output file, run `cat name_of_file`. However, you will not be able to view JPEGS or PDF files in any meaningful way if testing with Docker. 
 
-### Running locally
-
-We have provided a shell script which you can run by doing the following
-
-1. `chmod +x csvease`
-2. `./csvease input/optimizer/<input_file>`
-
 **Note that when running locally, your machine must have pandas and matplotlib Python libraries already installed.**
 
-### Testing previous parts
+## Algorithm Overview:
 
-In the case where you would like to test previous parts, this can be done locally. Simply run the commands: 
+We generate the python code by walking through the abstract syntax tree, we start from the root of the tree, generate code for each subtrees first, then apply the parent operator to combine the subtrees together. For example, the assignment statement will first evaluate the first child which is an identifier, then evaluate the second child which is a more complicated statement, then combine them together with equal (=) sign into the python code. Before the final step of code generation, it will go through the optimization phase and simplify the lines of code needed for the final result.
 
-1. `chmod +x test.sh`
-2. `./test.sh`
+## Error Propogation:
 
-This will run a script which would allow you to test both the parser and lexer. This is optional as the generator already includes these processes in the pipeline.
+### CSVeaseLexer
+We developed the CSVeaseLexer to parse the entire input and keep track of errors. At the end of processing the input file, the Lexer will have collected and logged all the line numbers of erros that have come up during this phase. These errors include:
+1. InvalidSequence 
+2. InvalidString 
+3. UnexpectedCharacter
+In the case where the lexer has detected any error, there will be no tokens generated.
 
-That concludes our CSVeaseGenerator. Thank you for a great semester.
+### CSVeaseParser
+Error handling in CSVeaseParse takes a different approach. The parser will halt execution when an error is encountered and raise a ParserError Exception with the indicated cause. Here are the errors that we detected (including but not limited to): 
+1. Invalid GET statement 
+2. Invalid LOAD statement 
+3. Missing Identifier 
 
-### 
+### CSVeaseGenerator
+Errors coming from this phase we predict are coming from the actual execution of the program itself. Since our coding language generated Python, any errors that you can see coming from the generator are Python compilation errors that we capture and cast as errors coming from compiling csvease code (technically it is!)
+
+Example:
+1. User provides an incorrect path to their CSV file
+2. Invalid sequence of statements 
+
 
 ## Lexical Grammar Rules (Descending Priority)
 ### 1. Strings
